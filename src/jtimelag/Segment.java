@@ -1,4 +1,4 @@
-package timelag;
+package jtimelag;
 
 public class Segment {
     int x1, y1, x2, y2;
@@ -13,5 +13,5 @@ public class Segment {
         this.p1Selected = p1Selected;
         this.p2Selected = p2Selected;
     }
-
+    
 }
