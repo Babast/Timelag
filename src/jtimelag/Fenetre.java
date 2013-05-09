@@ -32,19 +32,15 @@ public class Fenetre extends JFrame {
         setSize(800,600);
         
         
-        // Instancier les composants:
+        // Parametrage des composants:
         pan = new Panneau();
         pan.setBackground(Color.GRAY);
         radioButtonSegment = new JRadioButton();
         radioButtonSegment.setText("Segment");
-        btLoad = new JButton();
-        btLoad.setText("Load");
-        btPlay = new JButton();
-        btPlay.setText("Play");
-        btStop = new JButton();
-        btStop.setText("Stop");
-        btPause = new JButton();
-        btPause.setText("Pause");
+        btLoad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/open.png")));
+        btPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/play.png")));
+        btStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/stop.png")));
+        btPause.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/pause.png")));
         
         
         // Mise en page des composants:
