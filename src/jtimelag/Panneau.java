@@ -25,7 +25,7 @@ public class Panneau extends JPanel {
            g2d.setColor(Color.MAGENTA);
            g2d.drawLine(segm.x1, segm.y1, segm.x2, segm.y2);
            
-           g2d.setColor(Color.BLUE);
+           g2d.setColor(Color.cyan);
            g2d.drawLine(segm.x1, segm.y1, segm.x1 - (this.getHeight()- segm.y1) , this.getHeight());
            g2d.drawLine(segm.x1, segm.y1, segm.x1, this.getHeight());
            g2d.drawLine(segm.x2, segm.y2,  segm.x2 - (this.getHeight()- segm.y2), this.getHeight());

@@ -2,48 +2,68 @@ package jtimelag;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.util.ArrayList;
+import java.io.*;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.sound.sampled.*;
 import javax.swing.*;
 
-
 public class Fenetre extends JFrame {
-    private JPanel pan;
-    private JRadioButton radioButtonSegment; 
+    JRadioButton radioButtonSegment; 
+    JButton btPlay = new JButton();
+    JButton btLoad = new JButton();
+    JButton btStop = new JButton();
+    JButton btPause = new JButton();
+    JPanel pan;
+    
     public static String outil;
     public static ArrayList seg = new ArrayList();
-      
+    final JFileChooser fc = new JFileChooser();
+    
+    File file;
+    Player player;
+    
     Fenetre(){
         
+        // Parametrage de la fenetre
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        
         setTitle("Timelag (www.timelag.fr)");
         setSize(800,600);
         
+        
+        // Instancier les composants:
         pan = new Panneau();
         pan.setBackground(Color.GRAY);
-        
         radioButtonSegment = new JRadioButton();
         radioButtonSegment.setText("Segment");
+        btLoad = new JButton();
+        btLoad.setText("Load");
+        btPlay = new JButton();
+        btPlay.setText("Play");
+        btStop = new JButton();
+        btStop.setText("Stop");
+        btPause = new JButton();
+        btPause.setText("Pause");
         
-        GroupLayout layout = new GroupLayout(getContentPane());
-        getContentPane().setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(radioButtonSegment)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(pan, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(pan, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(radioButtonSegment)
-                .addContainerGap(354, Short.MAX_VALUE))
-        );
         
+        // Mise en page des composants:
+        JPanel panneauOutils = new JPanel(new GridLayout(5,1,5,5));
+        panneauOutils.add(radioButtonSegment);
+        
+        JPanel panneauPlayer = new JPanel(new GridLayout(1,4,5,5));
+        panneauPlayer.add(btLoad);
+        panneauPlayer.add(btPlay);
+        panneauPlayer.add(btPause);
+        panneauPlayer.add(btStop);
+        
+        setLayout(new BorderLayout (5,5));
+        add(panneauOutils, BorderLayout.WEST);
+        add(panneauPlayer, BorderLayout.AFTER_LAST_LINE);
+        add(pan,BorderLayout.CENTER);     
+
+        
+        // Création des écouteurs d'événements:
         radioButtonSegment.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -65,9 +85,65 @@ public class Fenetre extends JFrame {
             }
         });
         
+        btLoad.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    btLoadActionPerformed(evt);
+                } catch ( IOException | LineUnavailableException ex) {
+                    Logger.getLogger(Fenetre.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+       
+        btPlay.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                btPlayActionPerformed(evt);
+            }
+        });
+        
+        btStop.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    btStopActionPerformed(evt);
+                } catch (IOException | LineUnavailableException ex) {
+                    Logger.getLogger(Fenetre.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        
+        btPause.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                btPauseActionPerformed(evt);
+            }
+        });
     }
     
-     private void radioButtonSegmentActionPerformed(ActionEvent evt) {
+    private void btLoadActionPerformed(ActionEvent evt) throws IOException, LineUnavailableException {
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            file = fc.getSelectedFile();
+            player = new Player(file);
+        }
+    }   
+        
+    private void btPlayActionPerformed(ActionEvent evt) {
+        player.clip.start();
+    }  
+    
+    private void btStopActionPerformed(ActionEvent evt) throws IOException, LineUnavailableException {
+        player.clip.stop();
+        player = new Player(file);
+    }  
+    
+    private void btPauseActionPerformed(ActionEvent evt) {
+        player.clip.stop();
+    }  
+        
+    private void radioButtonSegmentActionPerformed(ActionEvent evt) {
          if (radioButtonSegment.isSelected()){
              outil = "Segment";
          }
