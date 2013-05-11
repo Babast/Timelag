@@ -23,6 +23,7 @@ public class Fenetre extends JFrame {
     
     File file;
     Player player;
+    public static WavSamplesLoader wavSamplesLoader;
     
     Fenetre(){
         
@@ -123,6 +124,7 @@ public class Fenetre extends JFrame {
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
             player = new Player(file);
+            wavSamplesLoader = new WavSamplesLoader(file);
         }
     }   
         

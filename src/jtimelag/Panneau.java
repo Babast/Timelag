@@ -35,6 +35,29 @@ public class Panneau extends JPanel {
            g2d.drawRect(segm.x1-3,segm.y1-3, 6, 6);
            g2d.drawRect(segm.x2-3,segm.y2-3, 6, 6);
         }
+        
+        // Waveform
+         if (Fenetre.wavSamplesLoader != null){
+             g2d.setColor(Color.RED);
+            for (int i = 0; i < this.getWidth()-2;i++){
+                int avg1 = 0;
+                    for(int j = i * (Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()); j < (i*Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()+Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()); j++){
+                        avg1 += Fenetre.wavSamplesLoader.audioFrames[j];
+                    }
+                avg1 = avg1 / (Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth());
+            
+                int avg2 = 0;
+                    for(int j = (i+1) * (Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()); j < ((i+1)*Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()+Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()); j++){
+                        avg2 += Fenetre.wavSamplesLoader.audioFrames[j];
+                    }
+                avg2 = avg2 / (Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth());
+                
+                g2d.drawLine(i, (avg1/100) + this.getHeight() / 2, i+1, (avg2/100) + this.getHeight() / 2);
+                //System.out.println("échantillon : " + Fenetre.wavSamplesLoader.audioFrames[i]);
+            }
+        
+            }
+
     }
 
 }
