@@ -38,25 +38,27 @@ public class Panneau extends JPanel {
         
         // Waveform
          if (Fenetre.wavSamplesLoader != null){
-             g2d.setColor(Color.RED);
-            for (int i = 0; i < this.getWidth()-2;i++){
-                int avg1 = 0;
-                    for(int j = i * (Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()); j < (i*Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()+Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()); j++){
-                        avg1 += Fenetre.wavSamplesLoader.audioFrames[j];
-                    }
-                avg1 = avg1 / (Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth());
+            g2d.setColor(Color.RED);
+            int nbSamplePerLine = 0;
+            int cpt = 0;
+            nbSamplePerLine = Fenetre.wavSamplesLoader.audioFrames.length / this.getHeight();
             
-                int avg2 = 0;
-                    for(int j = (i+1) * (Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()); j < ((i+1)*Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()+Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth()); j++){
-                        avg2 += Fenetre.wavSamplesLoader.audioFrames[j];
+            int y1,y2;  
+            for (int i = 0; i < this.getHeight();i++){
+                y1=0;
+                y2=0;
+                for(int j = cpt; (j < i * nbSamplePerLine); j++){
+                    cpt++;
+                    if(Fenetre.wavSamplesLoader.audioFrames[j] > y1){
+                         y1 = Fenetre.wavSamplesLoader.audioFrames[j];
                     }
-                avg2 = avg2 / (Fenetre.wavSamplesLoader.audioFrames.length / this.getWidth());
-                
-                g2d.drawLine(i, (avg1/100) + this.getHeight() / 2, i+1, (avg2/100) + this.getHeight() / 2);
-                //System.out.println("échantillon : " + Fenetre.wavSamplesLoader.audioFrames[i]);
+                    if(Fenetre.wavSamplesLoader.audioFrames[j] < y2){
+                         y2 = Fenetre.wavSamplesLoader.audioFrames[j];
+                    }
+                }
+                g2d.drawLine(i, (y1/300) + this.getHeight() / 2, i, (y2/300) + this.getHeight() / 2);
             }
-        
-            }
+         }
 
     }
 
