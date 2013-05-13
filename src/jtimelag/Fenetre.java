@@ -16,7 +16,8 @@ public class Fenetre extends JFrame {
     JButton btStop = new JButton();
     JButton btPause = new JButton();
     JPanel pan;
-    
+    JPanel waveForm;
+            
     public static String outil;
     public static ArrayList seg = new ArrayList();
     final JFileChooser fc = new JFileChooser();
@@ -36,8 +37,13 @@ public class Fenetre extends JFrame {
         // Parametrage des composants:
         pan = new Panneau();
         pan.setBackground(Color.GRAY);
+        
+        waveForm = new WaveForm();
+        waveForm.setBackground(Color.DARK_GRAY);
+        
         radioButtonSegment = new JRadioButton();
         radioButtonSegment.setText("Segment");
+        
         btLoad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/open.png")));
         btPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/play.png")));
         btStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/stop.png")));
@@ -54,11 +60,14 @@ public class Fenetre extends JFrame {
         panneauPlayer.add(btPause);
         panneauPlayer.add(btStop);
         
+        JPanel panneauDessin = new JPanel(new GridLayout(2,1,0,0));
+        panneauDessin.add(pan);
+        panneauDessin.add(waveForm);
+        
         setLayout(new BorderLayout (5,5));
         add(panneauOutils, BorderLayout.WEST);
+        add(panneauDessin, BorderLayout.CENTER);
         add(panneauPlayer, BorderLayout.AFTER_LAST_LINE);
-        add(pan,BorderLayout.CENTER);     
-
         
         // Création des écouteurs d'événements:
         radioButtonSegment.addActionListener(new ActionListener() {

@@ -1,6 +1,8 @@
 package jtimelag;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -13,9 +15,14 @@ public class WavSamplesLoader {
     AudioInputStream audioInputStream;
     
     WavSamplesLoader(File file){
-        try {
-            audioInputStream = AudioSystem.getAudioInputStream(file);
-
+        try {  
+            FileInputStream fs = new FileInputStream(file.getPath());
+            BufferedInputStream myStream = new BufferedInputStream(fs);
+            audioInputStream = AudioSystem.getAudioInputStream(myStream); 
+            if (audioInputStream.markSupported()) { 
+                audioInputStream.mark(Integer.MAX_VALUE); 
+            }
+                        
         } catch (UnsupportedAudioFileException | IOException ex) {
             Logger.getLogger(WavSamplesLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -25,6 +32,7 @@ public class WavSamplesLoader {
     public double[] getAudioSamples(int nbSamples){
         
         double audioFrames[];
+        
         int bytesPerFrame = audioInputStream.getFormat().getFrameSize();
         int numBytes = nbSamples * bytesPerFrame; 
         int channels = audioInputStream.getFormat().getChannels();
@@ -36,14 +44,14 @@ public class WavSamplesLoader {
         } catch (IOException ex) {
             Logger.getLogger(WavSamplesLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        int N= audioBytes.length;
-        audioFrames = new double[N/(bytesPerFrame/channels)];
+
+        audioFrames = new double[audioBytes.length/(bytesPerFrame/channels)];
         for (int i= 0; i < audioFrames.length; i++) {
             audioFrames[i]= ((short) (((audioBytes[2*i+1] & 0xFF) << 8) + (audioBytes[2*i] & 0xFF))) / 32768.0;
         }
 
         return audioFrames;
+        
     }
     
     

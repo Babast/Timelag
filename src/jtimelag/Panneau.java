@@ -2,8 +2,6 @@ package jtimelag;
 
 import java.awt.*;
 import javax.swing.*;
-import static jtimelag.Fenetre.wavSamplesLoader;
-
 
 public class Panneau extends JPanel {
        
@@ -38,30 +36,6 @@ public class Panneau extends JPanel {
            g2d.drawRect(segm.x2-3,segm.y2-3, 6, 6);
         }
         
-        // Waveform
-         if (Fenetre.wavSamplesLoader != null){         
-                g2d.setColor(Color.RED);
-                int nbSamplePerLine = (int)(wavSamplesLoader.audioInputStream.getFrameLength() / this.getHeight());
-                int y1,y2;  
-                for (int i = 0; i < this.getHeight();i++){
-                    double wavSamples[] = wavSamplesLoader.getAudioSamples(nbSamplePerLine);
-                    y1=0;
-                    y2=0;
-                    
-                    for(int j = 0; (j < wavSamples.length); j++){
-                        int yValue = (int)(wavSamples[j] * this.getHeight());
-                        if(yValue > y1){
-                             y1 = yValue ;
-                        }
-                        if(yValue < y2) {
-                             y2 = yValue;
-                        }
-                    }
-                    g2d.setColor(Color.RED);
-                    g2d.drawLine(i, y1/6 + this.getHeight() / 2, i, y2/6 + this.getHeight() / 2);
-                }
-         }
-
     }
 
 }
