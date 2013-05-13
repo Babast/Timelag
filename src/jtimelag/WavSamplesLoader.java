@@ -2,48 +2,49 @@ package jtimelag;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.UnsupportedAudioFileException;
 
 public class WavSamplesLoader {
     
-    int audioFrames[];
+    AudioInputStream audioInputStream;
     
     WavSamplesLoader(File file){
-        int totalFramesRead = 0;
         try {
-          AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
-          int bytesPerFrame = audioInputStream.getFormat().getFrameSize();
-          int numBytes = (int)audioInputStream.getFrameLength(); 
-          byte[] audioBytes = new byte[numBytes];
-          try {
-            int numBytesRead = 0;
-            int numFramesRead = 0;
-            while ((numBytesRead = 
-              audioInputStream.read(audioBytes)) != -1) {
-              numFramesRead = numBytesRead / bytesPerFrame;
-              totalFramesRead += numFramesRead;
-            }
-            
-            audioFrames = new int[audioBytes.length/bytesPerFrame];
-            
-            for (int i = 0; i < audioBytes.length/bytesPerFrame; i++) { 
-              //16 bit, litte endian (the first is the least significant)
-                int LSB=(int)audioBytes[i*2] & 0xff;
-                int MSB=(int)audioBytes[1+i*2] & 0xff;
+            audioInputStream = AudioSystem.getAudioInputStream(file);
 
-                audioFrames[i]=((MSB<<8)+LSB);
-                if((audioBytes[i*2+1]&0x80)!=0)//Check the sign
-                    audioFrames[i]=-(65536-audioFrames[i]);
-            }
-
-          } catch (Exception ex) { 
-            // Handle the error...
-          }
-        } catch (UnsupportedAudioFileException | IOException e) {
-          // Handle the error...
+        } catch (UnsupportedAudioFileException | IOException ex) {
+            Logger.getLogger(WavSamplesLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    
+    public double[] getAudioSamples(int nbSamples){
+        
+        double audioFrames[];
+        int bytesPerFrame = audioInputStream.getFormat().getFrameSize();
+        int numBytes = nbSamples * bytesPerFrame; 
+        int channels = audioInputStream.getFormat().getChannels();
+
+        byte[] audioBytes = new byte[numBytes];
+        
+        try {
+            audioInputStream.read(audioBytes, 0, numBytes);
+        } catch (IOException ex) {
+            Logger.getLogger(WavSamplesLoader.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        int N= audioBytes.length;
+        audioFrames = new double[N/(bytesPerFrame/channels)];
+        for (int i= 0; i < audioFrames.length; i++) {
+            audioFrames[i]= ((short) (((audioBytes[2*i+1] & 0xFF) << 8) + (audioBytes[2*i] & 0xFF))) / 32768.0;
+        }
+
+        return audioFrames;
+    }
+    
     
 }

@@ -2,6 +2,8 @@ package jtimelag;
 
 import java.awt.*;
 import javax.swing.*;
+import static jtimelag.Fenetre.wavSamplesLoader;
+
 
 public class Panneau extends JPanel {
        
@@ -37,27 +39,27 @@ public class Panneau extends JPanel {
         }
         
         // Waveform
-         if (Fenetre.wavSamplesLoader != null){
-            g2d.setColor(Color.RED);
-            int nbSamplePerLine = 0;
-            int cpt = 0;
-            nbSamplePerLine = Fenetre.wavSamplesLoader.audioFrames.length / this.getHeight();
-            
-            int y1,y2;  
-            for (int i = 0; i < this.getHeight();i++){
-                y1=0;
-                y2=0;
-                for(int j = cpt; (j < i * nbSamplePerLine); j++){
-                    cpt++;
-                    if(Fenetre.wavSamplesLoader.audioFrames[j] > y1){
-                         y1 = Fenetre.wavSamplesLoader.audioFrames[j];
+         if (Fenetre.wavSamplesLoader != null){         
+                g2d.setColor(Color.RED);
+                int nbSamplePerLine = (int)(wavSamplesLoader.audioInputStream.getFrameLength() / this.getHeight());
+                int y1,y2;  
+                for (int i = 0; i < this.getHeight();i++){
+                    double wavSamples[] = wavSamplesLoader.getAudioSamples(nbSamplePerLine);
+                    y1=0;
+                    y2=0;
+                    
+                    for(int j = 0; (j < wavSamples.length); j++){
+                        int yValue = (int)(wavSamples[j] * this.getHeight());
+                        if(yValue > y1){
+                             y1 = yValue ;
+                        }
+                        if(yValue < y2) {
+                             y2 = yValue;
+                        }
                     }
-                    if(Fenetre.wavSamplesLoader.audioFrames[j] < y2){
-                         y2 = Fenetre.wavSamplesLoader.audioFrames[j];
-                    }
+                    g2d.setColor(Color.RED);
+                    g2d.drawLine(i, y1/6 + this.getHeight() / 2, i, y2/6 + this.getHeight() / 2);
                 }
-                g2d.drawLine(i, (y1/300) + this.getHeight() / 2, i, (y2/300) + this.getHeight() / 2);
-            }
          }
 
     }
