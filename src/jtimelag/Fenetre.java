@@ -2,6 +2,7 @@ package jtimelag;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -20,6 +21,8 @@ public class Fenetre extends JFrame {
     
     public static String outil;
     public static ArrayList seg = new ArrayList();
+    public static ArrayList matrix = new ArrayList();
+     
     final JFileChooser fc = new JFileChooser();
     
     File file;
@@ -31,14 +34,14 @@ public class Fenetre extends JFrame {
         // Parametrage de la fenetre
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Timelag (www.timelag.fr)");
-        setSize(800,600);
-        
+        setSize(600,500);
         
         // Parametrage des composants:
         pan = new Panneau();
         pan.setBackground(Color.GRAY);
         
         radioButtonSegment = new JRadioButton();
+        radioButtonSegment.setBackground(Color.LIGHT_GRAY);
         radioButtonSegment.setText("Segment");
         
         btLoad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/open.png")));
@@ -49,6 +52,7 @@ public class Fenetre extends JFrame {
         
         // Positions des composants:
         JPanel panneauOutils = new JPanel(new GridLayout(5,1,5,5));
+        panneauOutils.setBackground(Color.LIGHT_GRAY);
         panneauOutils.add(radioButtonSegment);
         
         JPanel panneauPlayer = new JPanel(new GridLayout(1,4,5,5));
@@ -58,10 +62,9 @@ public class Fenetre extends JFrame {
         panneauPlayer.add(btStop);
         
         JPanel panneauDessin = new JPanel();
-        panneauDessin.setLayout(new GridLayout(1,1,2,2));
+        panneauDessin.setLayout(new GridLayout(1,1,0,2));
        
         panneauDessin.add(pan);
-       // panneauDessin.add(waveForm);
         
         setLayout(new BorderLayout (5,5));
         add(panneauOutils, BorderLayout.WEST);
@@ -133,6 +136,8 @@ public class Fenetre extends JFrame {
             file = fc.getSelectedFile();
             player = new Player(file);
             wavSamplesLoader = new WavSamplesLoader(file);
+            matrix.clear();
+            matrix.add(new Matrix(wavSamplesLoader.audioInputStream.available() / wavSamplesLoader.audioInputStream.getFormat().getFrameSize()));
             repaint();
         }
     }   
@@ -160,47 +165,58 @@ public class Fenetre extends JFrame {
     }         
      
     public void panMousePressed (MouseEvent e){
-        if (e.getClickCount() == 2){
-            if (outil != null){
-                switch (outil){
-                    case "Segment":
-                        seg.add(new Segment(e.getX(),e.getY(),e.getX(),e.getY(),false,true));
-                        break;
-                }
-            }
-        }
-        else if (e.getClickCount() == 1){
-            if (outil != null){
-                switch (outil){
-                    case "Segment":
-                        for (int i = 0;i<seg.size();i++){
-                            Segment segm = (Segment) seg.get(i);
-                            if (segm.p1Selected){
-                                segm.p1Selected = false;
-                            }
-                            else if (segm.p2Selected){
-                                segm.p2Selected = false;
-                            }
-                            else{
-                                if(e.getX() >= segm.x1-3 && e.getX() <= segm.x1+3 && e.getY() >= segm.y1-3 && e.getY() <= segm.y1+3){
-                                    segm.p1Selected = true;
-                                }
-                                else{
-                                    segm.p1Selected = false;
-                                }
-                                if(e.getX() >= segm.x2-3 && e.getX() <= segm.x2+3 && e.getY() >= segm.y2-3 && e.getY() <= segm.y2+3){
-                                    segm.p2Selected = true;
-                                }
-                                else{
-                                    segm.p2Selected = false;
-                                }
-                            }
-                            seg.set(i, segm);
+        // Recup de la couleur du pixel cliqué pour ne pas dessiner sur la zone interdite:
+        BufferedImage bi = new BufferedImage(pan.getWidth(), pan.getHeight(), BufferedImage.TYPE_INT_RGB);
+        pan.paint(bi.getGraphics());
+        int[] colors = bi.getRaster().getPixel(e.getX(), e.getY(), new int[3]);
+        
+        
+            if (e.getClickCount() == 2){
+                if ((colors[0]==0 || colors[1]==0 || colors[2]==0) == false){
+                    if (outil != null){
+                        switch (outil){
+                            case "Segment":
+                                seg.add(new Segment(e.getX(),e.getY(),e.getX(),e.getY(),false,true));
+                                break;
                         }
+                    }
                 }
-                repaint();
             }
-        }
+            else if (e.getClickCount() == 1){
+                if ((colors[0]==0 || colors[1]==0 || colors[2]==0) == false){
+                    if (outil != null){
+                        switch (outil){
+                            case "Segment":
+                                for (int i = 0;i<seg.size();i++){
+                                    Segment segm = (Segment) seg.get(i);
+                                    if (segm.p1Selected){
+                                        segm.p1Selected = false;
+                                    }
+                                    else if (segm.p2Selected){
+                                        segm.p2Selected = false;
+                                    }
+                                    else{
+                                        if(e.getX() >= segm.x1-3 && e.getX() <= segm.x1+3 && e.getY() >= segm.y1-3 && e.getY() <= segm.y1+3){
+                                            segm.p1Selected = true;
+                                        }
+                                        else{
+                                            segm.p1Selected = false;
+                                        }
+                                        if(e.getX() >= segm.x2-3 && e.getX() <= segm.x2+3 && e.getY() >= segm.y2-3 && e.getY() <= segm.y2+3){
+                                            segm.p2Selected = true;
+                                        }
+                                        else{
+                                            segm.p2Selected = false;
+                                        }
+                                    }
+                                    seg.set(i, segm);
+                                }
+                        }
+                        repaint();
+                    }
+                }
+            }
+
    }
     
     public void panMouseMoved (MouseEvent e){
