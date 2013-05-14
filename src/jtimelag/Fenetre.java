@@ -2,7 +2,6 @@ package jtimelag;
 
 import java.awt.*;
 import java.awt.event.*;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.util.*;
 import java.util.logging.Level;
@@ -163,76 +162,83 @@ public class Fenetre extends JFrame {
              outil = "";
          }
     }         
+    
+    public boolean CheckArea(Point p){
+        boolean check = true;
+        int x = p.x;
+        int y = p.y;
+        //Offset y
+        int yOff = y + pan.getWidth()-pan.getHeight()+60;
+        
+        if (x+yOff < pan.getWidth() || y > pan.getHeight()-60 ){
+            check = false;
+        }
+        return check;
+    }
      
-    public void panMousePressed (MouseEvent e){
-        // Recup de la couleur du pixel cliqué pour ne pas dessiner sur la zone interdite:
-        BufferedImage bi = new BufferedImage(pan.getWidth(), pan.getHeight(), BufferedImage.TYPE_INT_RGB);
-        pan.paint(bi.getGraphics());
-        int[] colors = bi.getRaster().getPixel(e.getX(), e.getY(), new int[3]);
-        
-        
+    public void panMousePressed (MouseEvent e){       
+        if (CheckArea(e.getPoint())){
             if (e.getClickCount() == 2){
-                if ((colors[0]==0 || colors[1]==0 || colors[2]==0) == false){
-                    if (outil != null){
-                        switch (outil){
-                            case "Segment":
-                                seg.add(new Segment(e.getX(),e.getY(),e.getX(),e.getY(),false,true));
-                                break;
-                        }
+                if (outil != null){
+                    switch (outil){
+                        case "Segment":
+                            seg.add(new Segment(e.getX(),e.getY(),e.getX(),e.getY(),false,true));
+                            break;
                     }
                 }
             }
             else if (e.getClickCount() == 1){
-                if ((colors[0]==0 || colors[1]==0 || colors[2]==0) == false){
-                    if (outil != null){
-                        switch (outil){
-                            case "Segment":
-                                for (int i = 0;i<seg.size();i++){
-                                    Segment segm = (Segment) seg.get(i);
-                                    if (segm.p1Selected){
-                                        segm.p1Selected = false;
-                                    }
-                                    else if (segm.p2Selected){
-                                        segm.p2Selected = false;
+                if (outil != null){
+                    switch (outil){
+                        case "Segment":
+                            for (int i = 0;i<seg.size();i++){
+                                Segment segm = (Segment) seg.get(i);
+                                if (segm.p1Selected){
+                                    segm.p1Selected = false;
+                                }
+                                else if (segm.p2Selected){
+                                    segm.p2Selected = false;
+                                }
+                                else{
+                                    if(e.getX() >= segm.x1-3 && e.getX() <= segm.x1+3 && e.getY() >= segm.y1-3 && e.getY() <= segm.y1+3){
+                                        segm.p1Selected = true;
                                     }
                                     else{
-                                        if(e.getX() >= segm.x1-3 && e.getX() <= segm.x1+3 && e.getY() >= segm.y1-3 && e.getY() <= segm.y1+3){
-                                            segm.p1Selected = true;
-                                        }
-                                        else{
-                                            segm.p1Selected = false;
-                                        }
-                                        if(e.getX() >= segm.x2-3 && e.getX() <= segm.x2+3 && e.getY() >= segm.y2-3 && e.getY() <= segm.y2+3){
-                                            segm.p2Selected = true;
-                                        }
-                                        else{
-                                            segm.p2Selected = false;
-                                        }
+                                        segm.p1Selected = false;
                                     }
-                                    seg.set(i, segm);
+                                    
+                                    if(e.getX() >= segm.x2-3 && e.getX() <= segm.x2+3 && e.getY() >= segm.y2-3 && e.getY() <= segm.y2+3){
+                                        segm.p2Selected = true;
+                                    }
+                                    else{
+                                        segm.p2Selected = false;
+                                    }
                                 }
-                        }
-                        repaint();
+                                seg.set(i, segm);
+                            }
                     }
+                    repaint();
                 }
             }
-
-   }
+        }
+    }
     
     public void panMouseMoved (MouseEvent e){
-        for (int i = 0;i<seg.size();i++){
-            Segment segm = (Segment) seg.get(i);
-            if(segm.p1Selected){
-                segm.x1 = e.getX();
-                segm.y1 = e.getY();
-            }
-            else if(segm.p2Selected){
-                segm.x2 = e.getX();
-                segm.y2 = e.getY();
-            }
-            seg.set(i, segm);
-        }
-        repaint();
+         if (CheckArea(e.getPoint())){
+             for (int i = 0;i<seg.size();i++){
+                 Segment segm = (Segment) seg.get(i);
+                 if(segm.p1Selected){
+                     segm.x1 = e.getX();
+                     segm.y1 = e.getY();
+                 }
+                 else if(segm.p2Selected){
+                     segm.x2 = e.getX();
+                     segm.y2 = e.getY();
+                 }
+                 seg.set(i, segm);
+             }
+             repaint();
+         }
     }
 
 }

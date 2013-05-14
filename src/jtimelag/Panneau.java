@@ -87,11 +87,6 @@ public class Panneau extends JPanel {
             
             g2d.setColor(Color.BLACK);
             g2d.fillPolygon(new Polygon(x, y, x.length));     
-
-
-            
-           
-
             
             // Dessiner segments
             for (int i = 0;i<Fenetre.seg.size();i++){
@@ -119,4 +114,5 @@ public class Panneau extends JPanel {
         }
     }
 
+   
 }
