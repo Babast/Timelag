@@ -48,7 +48,6 @@ public class Fenetre extends JFrame {
         btStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/stop.png")));
         btPause.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/pause.png")));
         
-        
         // Positions des composants:
         JPanel panneauOutils = new JPanel(new GridLayout(5,1,5,5));
         panneauOutils.setBackground(Color.LIGHT_GRAY);
@@ -170,75 +169,121 @@ public class Fenetre extends JFrame {
         //Offset y
         int yOff = y + pan.getWidth()-pan.getHeight()+60;
         
+        // Check zone interdite
         if (x+yOff < pan.getWidth() || y > pan.getHeight()-60 ){
             check = false;
         }
+        
         return check;
     }
-     
+    
+    public Point PtAlign(Point pt){
+       int x = pt.x;
+       int y = pt.y;
+       
+       // Aligner position sur gille (avec modulo de 20)
+       int diviseur = 10;
+       int modX = x%diviseur;
+       int modY = y%diviseur;
+        
+       if (modX > 0){
+           if ( modX <= diviseur/2){
+               pt.x = x - modX;
+           }
+           else if(modX > diviseur/2){
+               pt.x = x - modX + diviseur;
+           }
+       }
+       if (modY > 0){
+           if ( modY <= diviseur/2){
+               pt.y = y - modY;
+           }
+           else if(modY > diviseur/2){
+               pt.y = y - modY + diviseur ;
+           }
+       }
+       
+       return pt;
+    
+    }
+    
     public void panMousePressed (MouseEvent e){       
-        if (CheckArea(e.getPoint())){
-            if (e.getClickCount() == 2){
-                if (outil != null){
-                    switch (outil){
-                        case "Segment":
-                            seg.add(new Segment(e.getX(),e.getY(),e.getX(),e.getY(),false,true));
-                            break;
+        if (Fenetre.wavSamplesLoader != null){
+            if (CheckArea(e.getPoint())){
+                Point ptAlign = PtAlign(e.getPoint());
+                int x = ptAlign.x;
+                int y = ptAlign.y; 
+
+                if (e.getClickCount() == 2){
+                    if (outil != null){
+                        switch (outil){
+                            case "Segment":
+                                seg.add(new Segment(x,y,x,y,false,true));
+                                break;
+                        }
                     }
                 }
-            }
-            else if (e.getClickCount() == 1){
-                if (outil != null){
-                    switch (outil){
-                        case "Segment":
-                            for (int i = 0;i<seg.size();i++){
-                                Segment segm = (Segment) seg.get(i);
-                                if (segm.p1Selected){
-                                    segm.p1Selected = false;
-                                }
-                                else if (segm.p2Selected){
-                                    segm.p2Selected = false;
-                                }
-                                else{
-                                    if(e.getX() >= segm.x1-3 && e.getX() <= segm.x1+3 && e.getY() >= segm.y1-3 && e.getY() <= segm.y1+3){
-                                        segm.p1Selected = true;
-                                    }
-                                    else{
+                else if (e.getClickCount() == 1){
+                    if (outil != null){
+                        switch (outil){
+                            case "Segment":
+                                for (int i = 0;i<seg.size();i++){
+                                    Segment segm = (Segment) seg.get(i);
+                                    if (segm.p1Selected){
                                         segm.p1Selected = false;
                                     }
-                                    
-                                    if(e.getX() >= segm.x2-3 && e.getX() <= segm.x2+3 && e.getY() >= segm.y2-3 && e.getY() <= segm.y2+3){
-                                        segm.p2Selected = true;
-                                    }
-                                    else{
+                                    else if (segm.p2Selected){
                                         segm.p2Selected = false;
                                     }
+                                    else{
+                                        if(x >= segm.x1-3 && x <= segm.x1+3 && y >= segm.y1-3 && y <= segm.y1+3){
+                                            segm.p1Selected = true;
+                                        }
+                                        else{
+                                            segm.p1Selected = false;
+                                        }
+
+                                        if(x >= segm.x2-3 && x <= segm.x2+3 && y >= segm.y2-3 && y <= segm.y2+3){
+                                            segm.p2Selected = true;
+                                        }
+                                        else{
+                                            segm.p2Selected = false;
+                                        }
+                                    }
+                                    seg.set(i, segm);
                                 }
-                                seg.set(i, segm);
-                            }
+                        }
+                        repaint();
                     }
-                    repaint();
                 }
             }
         }
+        
     }
     
     public void panMouseMoved (MouseEvent e){
-         if (CheckArea(e.getPoint())){
-             for (int i = 0;i<seg.size();i++){
-                 Segment segm = (Segment) seg.get(i);
-                 if(segm.p1Selected){
-                     segm.x1 = e.getX();
-                     segm.y1 = e.getY();
+        if (Fenetre.wavSamplesLoader != null){
+            if (CheckArea(e.getPoint())){
+                 Point ptAlign = PtAlign(e.getPoint());
+                 int x = ptAlign.x;
+                 int y = ptAlign.y;
+
+                 for (int i = 0;i<seg.size();i++){
+                     Segment segm = (Segment) seg.get(i);
+                     if(segm.p1Selected){
+                         segm.x1 = x;
+                         segm.y1 = y;
+                     }
+                     else if(segm.p2Selected){
+                         segm.x2 = x;
+                         segm.y2 = y;
+                     }
+                     seg.set(i, segm);
                  }
-                 else if(segm.p2Selected){
-                     segm.x2 = e.getX();
-                     segm.y2 = e.getY();
-                 }
-                 seg.set(i, segm);
+                 repaint();
              }
-             repaint();
-         }
+        } 
+        
     }
 
 }

@@ -55,6 +55,16 @@ public class Panneau extends JPanel {
                 g2d.drawLine(i, y1/3 + yOffset, i, y2/3 + yOffset);
             }
 
+             // Quadrillage (pas de 10)
+            int pasGrille = 10;
+            g2d.setColor(Color.DARK_GRAY);
+            for (int i = 0; i<this.getHeight()-60; i = i + pasGrille){
+                g2d.drawLine(0, i, this.getWidth(), i);
+            }
+            for (int i = 0; i<this.getWidth(); i = i + pasGrille){
+                g2d.drawLine(i, 0, i, this.getHeight()-60);
+            }
+            
             // Dessiner Triangle base
             int[] x = new int[3];
             int[] y = new int[3];
@@ -70,7 +80,8 @@ public class Panneau extends JPanel {
             
             g2d.setColor(Color.WHITE);
             g2d.drawPolygon(new Polygon(x, y, x.length));     
-            
+
+                       
             // Remplir la zone interdite
             x = new int[4];
             y = new int[4];
