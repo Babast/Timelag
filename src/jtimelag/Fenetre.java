@@ -17,7 +17,7 @@ public class Fenetre extends JFrame {
     JButton btPause = new JButton();
     JPanel pan;
     JPanel waveForm;
-            
+    
     public static String outil;
     public static ArrayList seg = new ArrayList();
     final JFileChooser fc = new JFileChooser();
@@ -38,9 +38,6 @@ public class Fenetre extends JFrame {
         pan = new Panneau();
         pan.setBackground(Color.GRAY);
         
-        waveForm = new WaveForm();
-        waveForm.setBackground(Color.DARK_GRAY);
-        
         radioButtonSegment = new JRadioButton();
         radioButtonSegment.setText("Segment");
         
@@ -50,7 +47,7 @@ public class Fenetre extends JFrame {
         btPause.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/pause.png")));
         
         
-        // Mise en page des composants:
+        // Positions des composants:
         JPanel panneauOutils = new JPanel(new GridLayout(5,1,5,5));
         panneauOutils.add(radioButtonSegment);
         
@@ -60,14 +57,16 @@ public class Fenetre extends JFrame {
         panneauPlayer.add(btPause);
         panneauPlayer.add(btStop);
         
-        JPanel panneauDessin = new JPanel(new GridLayout(2,1,0,0));
+        JPanel panneauDessin = new JPanel();
+        panneauDessin.setLayout(new GridLayout(1,1,2,2));
+       
         panneauDessin.add(pan);
-        panneauDessin.add(waveForm);
+       // panneauDessin.add(waveForm);
         
         setLayout(new BorderLayout (5,5));
         add(panneauOutils, BorderLayout.WEST);
         add(panneauDessin, BorderLayout.CENTER);
-        add(panneauPlayer, BorderLayout.AFTER_LAST_LINE);
+        add(panneauPlayer, BorderLayout.SOUTH);
         
         // Création des écouteurs d'événements:
         radioButtonSegment.addActionListener(new ActionListener() {
@@ -134,6 +133,7 @@ public class Fenetre extends JFrame {
             file = fc.getSelectedFile();
             player = new Player(file);
             wavSamplesLoader = new WavSamplesLoader(file);
+            repaint();
         }
     }   
         
@@ -201,7 +201,6 @@ public class Fenetre extends JFrame {
                 repaint();
             }
         }
-        
    }
     
     public void panMouseMoved (MouseEvent e){
