@@ -11,6 +11,7 @@ import javax.swing.*;
 
 public class Fenetre extends JFrame {
     JRadioButton radioButtonSegment; 
+    JRadioButton radioButtonGomme;
     JButton btPlay = new JButton();
     JButton btLoad = new JButton();
     JButton btStop = new JButton();
@@ -43,6 +44,10 @@ public class Fenetre extends JFrame {
         radioButtonSegment.setBackground(Color.LIGHT_GRAY);
         radioButtonSegment.setText("Segment");
         
+        radioButtonGomme = new JRadioButton();
+        radioButtonGomme.setBackground(Color.LIGHT_GRAY);
+        radioButtonGomme.setText("Gomme");
+        
         btLoad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/open.png")));
         btPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/play.png")));
         btStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/stop.png")));
@@ -52,6 +57,7 @@ public class Fenetre extends JFrame {
         JPanel panneauOutils = new JPanel(new GridLayout(5,1,5,5));
         panneauOutils.setBackground(Color.LIGHT_GRAY);
         panneauOutils.add(radioButtonSegment);
+        panneauOutils.add(radioButtonGomme);
         
         JPanel panneauPlayer = new JPanel(new GridLayout(1,4,5,5));
         panneauPlayer.add(btLoad);
@@ -76,7 +82,14 @@ public class Fenetre extends JFrame {
                 radioButtonSegmentActionPerformed(evt);
             }
         });
-
+        
+        radioButtonGomme.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                radioButtonGommeActionPerformed(evt);
+            }
+        });
+                
         pan.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent evt) {
@@ -154,13 +167,25 @@ public class Fenetre extends JFrame {
     }  
         
     private void radioButtonSegmentActionPerformed(ActionEvent evt) {
-         if (radioButtonSegment.isSelected()){
+        if (radioButtonSegment.isSelected()){
              outil = "Segment";
+             radioButtonGomme.setSelected(false);
          }
          else{
              outil = "";
          }
-    }         
+    }
+    
+    private void radioButtonGommeActionPerformed(ActionEvent evt) {
+         if (radioButtonGomme.isSelected()){
+             outil = "Gomme";
+             radioButtonSegment.setSelected(false);
+         }
+         else{
+             outil = "";
+         }
+    }  
+        
     
     public boolean CheckArea(Point p){
         boolean check = true;
@@ -227,31 +252,19 @@ public class Fenetre extends JFrame {
                     if (outil != null){
                         switch (outil){
                             case "Segment":
+                                majSegPtSelection(x,y);
+                                break;
+                            case "Gomme":
+                                majSegPtSelection(x,y);
                                 for (int i = 0;i<seg.size();i++){
                                     Segment segm = (Segment) seg.get(i);
-                                    if (segm.p1Selected){
-                                        segm.p1Selected = false;
-                                    }
-                                    else if (segm.p2Selected){
-                                        segm.p2Selected = false;
-                                    }
-                                    else{
-                                        if(x >= segm.x1-3 && x <= segm.x1+3 && y >= segm.y1-3 && y <= segm.y1+3){
-                                            segm.p1Selected = true;
-                                        }
-                                        else{
-                                            segm.p1Selected = false;
-                                        }
-
-                                        if(x >= segm.x2-3 && x <= segm.x2+3 && y >= segm.y2-3 && y <= segm.y2+3){
-                                            segm.p2Selected = true;
-                                        }
-                                        else{
-                                            segm.p2Selected = false;
-                                        }
-                                    }
-                                    seg.set(i, segm);
-                                }
+                                    if (segm.p1Selected || segm.p2Selected ){
+                                        seg.set(i, segm);
+                                        seg.remove(i);
+                                    } 
+                                 }
+                            break;
+                                
                         }
                         repaint();
                     }
@@ -259,6 +272,34 @@ public class Fenetre extends JFrame {
             }
         }
         
+    }
+    
+    public void majSegPtSelection(int x, int y){
+        // Mise à jour des selections de points de segments
+        for (int i = 0;i<seg.size();i++){
+            Segment segm = (Segment) seg.get(i);
+            if (segm.p1Selected){
+                segm.p1Selected = false;
+            }
+            else if (segm.p2Selected){
+                segm.p2Selected = false;
+            }
+            else{
+                if(x >= segm.x1-3 && x <= segm.x1+3 && y >= segm.y1-3 && y <= segm.y1+3){
+                    segm.p1Selected = true;
+                }
+                else{
+                    segm.p1Selected = false;
+                }
+                if(x >= segm.x2-3 && x <= segm.x2+3 && y >= segm.y2-3 && y <= segm.y2+3){
+                    segm.p2Selected = true;
+                }
+                else{
+                    segm.p2Selected = false;
+                }
+            }
+            seg.set(i, segm);
+        }
     }
     
     public void panMouseMoved (MouseEvent e){
