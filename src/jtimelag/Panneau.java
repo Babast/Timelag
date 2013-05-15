@@ -1,6 +1,7 @@
 package jtimelag;
 
 import java.awt.*;
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -8,7 +9,19 @@ import javax.swing.*;
 import static jtimelag.Fenetre.wavSamplesLoader;
 
 public class Panneau extends JPanel {
-
+    boolean refreshWaveForm;
+    BufferedImage waveForm;
+    
+    Panneau(){
+        refreshWaveForm = true;
+        this.addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentResized(java.awt.event.ComponentEvent evt) {
+                panneauComponentResized(evt);
+            }
+        });
+    }
+    
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
@@ -18,42 +31,51 @@ public class Panneau extends JPanel {
         g2d.setRenderingHints(rh);
         
         if (Fenetre.wavSamplesLoader != null){
+            
             // Waveform
-            int yOffset = this.getHeight() - 30;
-            g2d.setColor(Color.DARK_GRAY);
-            g2d.fillRect(0, yOffset-30, this.getWidth(), yOffset*2);
+            if(refreshWaveForm){
+                // Recalcul du waveform et stockage dans le bufferedImage
+                waveForm = new BufferedImage(this.getWidth(), 60, BufferedImage.TYPE_INT_RGB);  
+                Graphics2D gWaveForm = waveForm.createGraphics(); 
+               
+                gWaveForm.setColor(Color.DARK_GRAY);
+                gWaveForm.fillRect(0, 0, waveForm.getWidth(), waveForm.getHeight());
 
-            if (wavSamplesLoader.audioInputStream.markSupported()) {
-                try {
-                    wavSamplesLoader.audioInputStream.reset();
-                } catch (IOException ex) {
-                    Logger.getLogger(Panneau.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-
-            g2d.setColor(Color.RED);
-            int nbSamplePerLine = (int)(wavSamplesLoader.audioInputStream.getFrameLength() / this.getWidth());
-            int y1,y2;
-
-            for (int i = 0; i < this.getWidth();i++){
-                double wavSamples[] = wavSamplesLoader.getAudioSamples(nbSamplePerLine);
-                y1=0;
-                y2=0;
-                for(int j = 0; (j < wavSamples.length); j++){
-                    int yValue = (int)(wavSamples[j] * 30);
-                    if(yValue > y1){
-                        y1 = yValue ;
-                    }
-                    if(yValue < y2) {
-                        y2 = yValue;
+                if (wavSamplesLoader.audioInputStream.markSupported()) {
+                    try {
+                        wavSamplesLoader.audioInputStream.reset();
+                    } catch (IOException ex) {
+                        Logger.getLogger(Panneau.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
 
-                g2d.setColor(new Color(0,100,255));
-                g2d.drawLine(i, y1 + yOffset, i, y2 + yOffset);
-                g2d.setColor(new Color(0,100,150));
-                g2d.drawLine(i, y1/3 + yOffset, i, y2/3 + yOffset);
+                gWaveForm.setColor(Color.RED);
+                int nbSamplePerLine = (int)(wavSamplesLoader.audioInputStream.getFrameLength() / waveForm.getWidth());
+                int y1,y2;
+
+                for (int i = 0; i < waveForm.getWidth(); i++){
+                    double wavSamples[] = wavSamplesLoader.getAudioSamples(nbSamplePerLine);
+                    y1=0;
+                    y2=0;
+                    for(int j = 0; (j < wavSamples.length); j++){
+                        int yValue = (int)(wavSamples[j] * waveForm.getHeight()/2);
+                        if(yValue > y1){
+                            y1 = yValue ;
+                        }
+                        if(yValue < y2) {
+                            y2 = yValue;
+                        }
+                    }
+                    int yOffset = waveForm.getHeight()/2;
+                    gWaveForm.setColor(new Color(0,100,255));
+                    gWaveForm.drawLine(i, y1+yOffset, i, y2+yOffset);
+                    gWaveForm.setColor(new Color(0,100,150));
+                    gWaveForm.drawLine(i, (y1/3)+yOffset, i, (y2/3)+yOffset);
+                }
+                refreshWaveForm = false;
             }
+            
+             g2d.drawImage(waveForm, null, 0, this.getHeight() - 60);
 
              // Quadrillage (pas de 10)
             int pasGrille = 10;
@@ -125,5 +147,8 @@ public class Panneau extends JPanel {
         }
     }
 
-   
+    private void panneauComponentResized(java.awt.event.ComponentEvent evt) {
+        refreshWaveForm = true;
+    }
+    
 }
