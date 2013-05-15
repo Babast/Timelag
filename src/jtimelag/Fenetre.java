@@ -19,7 +19,7 @@ public class Fenetre extends JFrame {
     JPanel pan;
     JPanel waveForm;
     
-    public static String outil;
+    static String outil;
     public static ArrayList seg = new ArrayList();
     public static ArrayList matrix = new ArrayList();
      
@@ -34,9 +34,9 @@ public class Fenetre extends JFrame {
         // Parametrage de la fenetre
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Timelag (www.timelag.fr)");
-        setSize(600,500);
+        setSize(800,600);
         
-        // Parametrage des composants:
+        // Initialisation des composants:
         pan = new Panneau();
         pan.setBackground(Color.GRAY);
         
@@ -188,17 +188,16 @@ public class Fenetre extends JFrame {
         
     
     public boolean CheckArea(Point p){
+        // Verifier si le point dans la zone interdite
         boolean check = true;
         int x = p.x;
         int y = p.y;
         //Offset y
         int yOff = y + pan.getWidth()-pan.getHeight()+60;
         
-        // Check zone interdite
         if (x+yOff < pan.getWidth() || y > pan.getHeight()-60 ){
             check = false;
         }
-        
         return check;
     }
     
@@ -235,6 +234,7 @@ public class Fenetre extends JFrame {
     public void panMousePressed (MouseEvent e){       
         if (Fenetre.wavSamplesLoader != null){
             if (CheckArea(e.getPoint())){
+                // Aligner point sur la grille
                 Point ptAlign = PtAlign(e.getPoint());
                 int x = ptAlign.x;
                 int y = ptAlign.y; 
