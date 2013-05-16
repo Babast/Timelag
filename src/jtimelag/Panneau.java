@@ -11,9 +11,11 @@ import static jtimelag.Fenetre.wavSamplesLoader;
 public class Panneau extends JPanel {
     boolean refreshWaveForm;
     BufferedImage waveForm;
+    Matrix matrix;
     
     Panneau(){
         refreshWaveForm = true;
+        matrix = new Matrix();
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentResized(java.awt.event.ComponentEvent evt) {
@@ -121,27 +123,34 @@ public class Panneau extends JPanel {
             g2d.fillPolygon(new Polygon(x, y, x.length));     
             
             // Dessiner segments
-            for (int i = 0;i<Fenetre.seg.size();i++){
-                Segment segm = (Segment) Fenetre.seg.get(i);
+            for (int i = 0;i<matrix.seg.size();i++){
+                Segment segm = (Segment) matrix.seg.get(i);
+                int h = this.getHeight();
+                int w = this.getWidth();
+                int x1 = (int)(segm.x1 * w);
+                int y1 = (int)(segm.y1 * w -(w+60-h));
+                int x2 = (int)(segm.x2 * w);
+                int y2 = (int)(segm.y2 * w -(w+60-h));
+                
                 g2d.setColor(Color.MAGENTA);
-                g2d.drawLine(segm.x1, segm.y1, segm.x2, segm.y2);
+                g2d.drawLine(x1, y1, x2, y2);
 
                 g2d.setColor(Color.cyan);
-                g2d.drawLine(segm.x1, segm.y1, segm.x1 - (hauteurTriangle- segm.y1) , hauteurTriangle);
-                g2d.drawLine(segm.x1, segm.y1, segm.x1, hauteurTriangle);
-                g2d.drawLine(segm.x2, segm.y2,  segm.x2 - (hauteurTriangle- segm.y2),hauteurTriangle);
-                g2d.drawLine(segm.x2, segm.y2, segm.x2, hauteurTriangle);
+                g2d.drawLine(x1, y1, x1 - (hauteurTriangle- y1) , hauteurTriangle);
+                g2d.drawLine(x1, y1, x1, hauteurTriangle);
+                g2d.drawLine(x2, y2,  x2 - (hauteurTriangle- y2),hauteurTriangle);
+                g2d.drawLine(x2, y2, x2, hauteurTriangle);
 
                 g2d.setColor(Color.ORANGE);
-                g2d.drawLine(segm.x1 - (hauteurTriangle- segm.y1), hauteurTriangle , segm.x1 - (hauteurTriangle- segm.y1), this.getHeight());
-                g2d.drawLine(segm.x2 - (hauteurTriangle- segm.y2), hauteurTriangle, segm.x2 - (hauteurTriangle- segm.y2), this.getHeight());
+                g2d.drawLine(x1 - (hauteurTriangle- y1), hauteurTriangle , x1 - (hauteurTriangle- y1), this.getHeight());
+                g2d.drawLine(x2 - (hauteurTriangle- y2), hauteurTriangle, x2 - (hauteurTriangle- y2), this.getHeight());
                 g2d.setColor(Color.RED);
-                g2d.drawLine(segm.x1, hauteurTriangle, segm.x1, this.getHeight());
-                g2d.drawLine(segm.x2, hauteurTriangle, segm.x2, this.getHeight());
+                g2d.drawLine(x1, hauteurTriangle, x1, this.getHeight());
+                g2d.drawLine(x2, hauteurTriangle, x2, this.getHeight());
 
                 g2d.setColor(Color.GREEN);
-                g2d.drawRect(segm.x1-3,segm.y1-3, 6, 6);
-                g2d.drawRect(segm.x2-3,segm.y2-3, 6, 6);
+                g2d.drawRect(x1-3,y1-3, 6, 6);
+                g2d.drawRect(x2-3,y2-3, 6, 6);
             }
         }
     }

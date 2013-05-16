@@ -3,7 +3,6 @@ package jtimelag;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.*;
@@ -18,14 +17,14 @@ public class Fenetre extends JFrame {
     JButton btLoad = new JButton();
     JButton btStop = new JButton();
     JButton btPause = new JButton();
-    JPanel pan;
+    Panneau pan;
     JPanel waveForm;
     JSpinner jsPasGrille = new JSpinner();
     
     static String outil;
     public static int pasGrille;
-    public static ArrayList seg = new ArrayList();
-    public static ArrayList matrix = new ArrayList();
+//    public static ArrayList seg = new ArrayList();
+//    public static ArrayList matrix = new ArrayList();
      
     final JFileChooser fc = new JFileChooser();
     
@@ -161,8 +160,8 @@ public class Fenetre extends JFrame {
             file = fc.getSelectedFile();
             player = new Player(file);
             wavSamplesLoader = new WavSamplesLoader(file);
-            matrix.clear();
-            matrix.add(new Matrix(wavSamplesLoader.audioInputStream.available() / wavSamplesLoader.audioInputStream.getFormat().getFrameSize()));
+//            matrix.clear();
+//            matrix.add(new Matrix(wavSamplesLoader.audioInputStream.available() / wavSamplesLoader.audioInputStream.getFormat().getFrameSize()));
             repaint();
         }
     }   
@@ -209,10 +208,9 @@ public class Fenetre extends JFrame {
             jsPasGrille.setValue(1);
         }
     }                                 
-
     
     public boolean CheckArea(Point p){
-        // Verifier si le point dans la zone interdite
+        // Verifier si le point est hors la zone interdite
         boolean check = true;
         int x = p.x;
         int y = p.y;
@@ -267,7 +265,12 @@ public class Fenetre extends JFrame {
                     if (outil != null){
                         switch (outil){
                             case "Segment":
-                                seg.add(new Segment(x,y,x,y,false,true));
+                                int h = pan.getHeight();
+                                int w = pan.getWidth();
+                                double segX = (double)x / (double)w;
+                                double segY = (double)(y+(w+60-h)) / (double)w;
+                                pan.matrix.seg.add(new Segment(segX, segY, segX, segY, false, true));
+                                repaint();
                                 break;
                         }
                     }
@@ -283,11 +286,10 @@ public class Fenetre extends JFrame {
                                 x = e.getX();
                                 y = e.getY();
                                 majSegPtSelection(x,y);
-                                for (int i = 0;i<seg.size();i++){
-                                    Segment segm = (Segment) seg.get(i);
+                                for (int i = 0;i<pan.matrix.seg.size();i++){
+                                    Segment segm = (Segment) pan.matrix.seg.get(i);
                                     if (segm.p1Selected || segm.p2Selected ){
-                                        seg.set(i, segm);
-                                        seg.remove(i);
+                                        pan.matrix.seg.remove(i);
                                     } 
                                  }
                             break;
@@ -303,8 +305,15 @@ public class Fenetre extends JFrame {
     
     public void majSegPtSelection(int x, int y){
         // Mise à jour des selections de points de segments
-        for (int i = 0;i<seg.size();i++){
-            Segment segm = (Segment) seg.get(i);
+        for (int i = 0;i<pan.matrix.seg.size();i++){
+            Segment segm = (Segment) pan.matrix.seg.get(i);
+            int h = pan.getHeight();
+            int w = pan.getWidth();
+            int x1 = (int)(segm.x1 * w);
+            int y1 = (int)(segm.y1 * w -(w+60-h));
+            int x2 = (int)(segm.x2 * w);
+            int y2 = (int)(segm.y2 * w -(w+60-h));
+            
             if (segm.p1Selected){
                 segm.p1Selected = false;
             }
@@ -312,41 +321,47 @@ public class Fenetre extends JFrame {
                 segm.p2Selected = false;
             }
             else{
-                if(x >= segm.x1-3 && x <= segm.x1+3 && y >= segm.y1-3 && y <= segm.y1+3){
+                if(x >= x1-3 && x <= x1+3 && y >= y1-3 && y <= y1+3){
                     segm.p1Selected = true;
                 }
                 else{
                     segm.p1Selected = false;
                 }
-                if(x >= segm.x2-3 && x <= segm.x2+3 && y >= segm.y2-3 && y <= segm.y2+3){
+                if(x >= x2-3 && x <= x2+3 && y >= y2-3 && y <= y2+3){
                     segm.p2Selected = true;
                 }
                 else{
                     segm.p2Selected = false;
                 }
             }
-            seg.set(i, segm);
+            pan.matrix.seg.set(i, segm);
         }
     }
     
     public void panMouseMoved (MouseEvent e){
         if (Fenetre.wavSamplesLoader != null){
             if (CheckArea(e.getPoint())){
-                 Point ptAlign = PtAlign(e.getPoint());
-                 int x = ptAlign.x;
-                 int y = ptAlign.y;
-
-                 for (int i = 0;i<seg.size();i++){
-                     Segment segm = (Segment) seg.get(i);
+                Point ptAlign = PtAlign(e.getPoint());
+                int x = ptAlign.x;
+                int y = ptAlign.y;
+                
+                int h = pan.getHeight();
+                int w = pan.getWidth();
+                
+                double segX = (double)x / (double)w;
+                double segY = (double)(y+(w+60-h)) / (double)w;
+                
+                 for (int i = 0;i<pan.matrix.seg.size();i++){
+                     Segment segm = (Segment) pan.matrix.seg.get(i);
                      if(segm.p1Selected){
-                         segm.x1 = x;
-                         segm.y1 = y;
+                         segm.x1 = segX;
+                         segm.y1 = segY;
                      }
                      else if(segm.p2Selected){
-                         segm.x2 = x;
-                         segm.y2 = y;
+                         segm.x2 = segX;
+                         segm.y2 = segY;
                      }
-                     seg.set(i, segm);
+                     pan.matrix.seg.set(i, segm);
                  }
                  repaint();
              }

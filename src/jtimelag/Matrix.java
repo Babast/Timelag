@@ -1,10 +1,13 @@
 package jtimelag;
 
+import java.util.ArrayList;
+
 public class Matrix {
-    int longBase;           
+    
+   ArrayList seg;   
             
-    Matrix(int longBase){
-        this.longBase = longBase;
+    Matrix(){
+        seg = new ArrayList();
     }
     
 }
