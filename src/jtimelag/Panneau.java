@@ -77,13 +77,12 @@ public class Panneau extends JPanel {
             
              g2d.drawImage(waveForm, null, 0, this.getHeight() - 60);
 
-             // Quadrillage (pas de 10)
-            int pasGrille = 10;
+             // Quadrillage
             g2d.setColor(Color.DARK_GRAY);
-            for (int i = 0; i<this.getHeight()-60; i = i + pasGrille){
+            for (int i = 0; i<this.getHeight()-60; i = i + Fenetre.pasGrille){
                 g2d.drawLine(0, i, this.getWidth(), i);
             }
-            for (int i = 0; i<this.getWidth(); i = i + pasGrille){
+            for (int i = 0; i<this.getWidth(); i = i + Fenetre.pasGrille){
                 g2d.drawLine(i, 0, i, this.getHeight()-60);
             }
             

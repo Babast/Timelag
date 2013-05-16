@@ -8,18 +8,22 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.*;
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 public class Fenetre extends JFrame {
-    JRadioButton radioButtonSegment; 
-    JRadioButton radioButtonGomme;
+    JRadioButton radioButtonSegment = new JRadioButton(); 
+    JRadioButton radioButtonGomme = new JRadioButton();
     JButton btPlay = new JButton();
     JButton btLoad = new JButton();
     JButton btStop = new JButton();
     JButton btPause = new JButton();
     JPanel pan;
     JPanel waveForm;
+    JSpinner jsPasGrille = new JSpinner();
     
     static String outil;
+    public static int pasGrille;
     public static ArrayList seg = new ArrayList();
     public static ArrayList matrix = new ArrayList();
      
@@ -40,13 +44,15 @@ public class Fenetre extends JFrame {
         pan = new Panneau();
         pan.setBackground(Color.GRAY);
         
-        radioButtonSegment = new JRadioButton();
         radioButtonSegment.setBackground(Color.LIGHT_GRAY);
         radioButtonSegment.setText("Segment");
         
-        radioButtonGomme = new JRadioButton();
         radioButtonGomme.setBackground(Color.LIGHT_GRAY);
         radioButtonGomme.setText("Gomme");
+        
+        jsPasGrille.setToolTipText("Pas de la grille");
+        jsPasGrille.setValue(10);
+        pasGrille = (int)jsPasGrille.getValue();
         
         btLoad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/open.png")));
         btPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/play.png")));
@@ -54,10 +60,11 @@ public class Fenetre extends JFrame {
         btPause.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/pause.png")));
         
         // Positions des composants:
-        JPanel panneauOutils = new JPanel(new GridLayout(5,1,5,5));
+        JPanel panneauOutils = new JPanel(new GridLayout(20,1,5,5));
         panneauOutils.setBackground(Color.LIGHT_GRAY);
         panneauOutils.add(radioButtonSegment);
         panneauOutils.add(radioButtonGomme);
+        panneauOutils.add(jsPasGrille);
         
         JPanel panneauPlayer = new JPanel(new GridLayout(1,4,5,5));
         panneauPlayer.add(btLoad);
@@ -89,7 +96,14 @@ public class Fenetre extends JFrame {
                 radioButtonGommeActionPerformed(evt);
             }
         });
-                
+        
+        jsPasGrille.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent evt) {
+                jsPasGrilleStateChanged(evt);
+            }
+        });
+        
         pan.addMouseMotionListener(new MouseMotionAdapter() {
             @Override
             public void mouseMoved(MouseEvent evt) {
@@ -184,8 +198,18 @@ public class Fenetre extends JFrame {
          else{
              outil = "";
          }
-    }  
-        
+    }
+    
+    private void jsPasGrilleStateChanged(ChangeEvent e) {                                  
+        if((int)jsPasGrille.getValue() > 0){
+            pasGrille = (int)jsPasGrille.getValue();
+            repaint();
+        }
+        else{
+            jsPasGrille.setValue(1);
+        }
+    }                                 
+
     
     public boolean CheckArea(Point p){
         // Verifier si le point dans la zone interdite
@@ -205,8 +229,8 @@ public class Fenetre extends JFrame {
        int x = pt.x;
        int y = pt.y;
        
-       // Aligner position sur gille (avec modulo de 20)
-       int diviseur = 10;
+       // Aligner position sur gille
+       int diviseur = pasGrille;
        int modX = x%diviseur;
        int modY = y%diviseur;
         
@@ -255,6 +279,9 @@ public class Fenetre extends JFrame {
                                 majSegPtSelection(x,y);
                                 break;
                             case "Gomme":
+                                // Annuler l'aligment sur la grille dans le cas des suppressions:
+                                x = e.getX();
+                                y = e.getY();
                                 majSegPtSelection(x,y);
                                 for (int i = 0;i<seg.size();i++){
                                     Segment segm = (Segment) seg.get(i);
