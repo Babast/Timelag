@@ -20,6 +20,7 @@ public class Fenetre extends JFrame {
     Panneau pan;
     JPanel waveForm;
     JSpinner jsPasGrille = new JSpinner();
+    Timer timer;
     
     static String outil;
     public static int pasGrille;
@@ -29,7 +30,7 @@ public class Fenetre extends JFrame {
     final JFileChooser fc = new JFileChooser();
     
     File file;
-    Player player;
+    public static Player player;
     public static WavSamplesLoader wavSamplesLoader;
     
     Fenetre(){
@@ -59,7 +60,7 @@ public class Fenetre extends JFrame {
         btPause.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/pause.png")));
         
         // Positions des composants:
-        JPanel panneauOutils = new JPanel(new GridLayout(20,1,5,5));
+        JPanel panneauOutils = new JPanel(new GridLayout(10,1,5,5));
         panneauOutils.setBackground(Color.LIGHT_GRAY);
         panneauOutils.add(radioButtonSegment);
         panneauOutils.add(radioButtonGomme);
@@ -168,15 +169,33 @@ public class Fenetre extends JFrame {
         
     private void btPlayActionPerformed(ActionEvent evt) {
         player.clip.start();
-    }  
+        timer = new Timer(40,new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                TimerTickActionPerformed(evt);
+            }
+        });
+        timer.start();
+    }
     
+    private void TimerTickActionPerformed(ActionEvent evt) {
+           if(Fenetre.player.clip.getFramePosition() <= wavSamplesLoader.audioInputStream.getFrameLength()){
+               repaint();
+           }
+           else{
+               timer.stop();
+           }
+    } 
+       
     private void btStopActionPerformed(ActionEvent evt) throws IOException, LineUnavailableException {
         player.clip.stop();
+        timer.stop();
         player = new Player(file);
     }  
     
     private void btPauseActionPerformed(ActionEvent evt) {
         player.clip.stop();
+        timer.stop();
     }  
         
     private void radioButtonSegmentActionPerformed(ActionEvent evt) {
@@ -227,10 +246,13 @@ public class Fenetre extends JFrame {
        int x = pt.x;
        int y = pt.y;
        
+       // Correction de y car la grille débute en bas:
+       int yReel = pan.getHeight()-y-60;
+
        // Aligner position sur gille
        int diviseur = pasGrille;
        int modX = x%diviseur;
-       int modY = y%diviseur;
+       int modY = yReel%diviseur;
         
        if (modX > 0){
            if ( modX <= diviseur/2){
@@ -242,10 +264,12 @@ public class Fenetre extends JFrame {
        }
        if (modY > 0){
            if ( modY <= diviseur/2){
-               pt.y = y - modY;
+               yReel = yReel - modY;
+               pt.y = pan.getHeight()-yReel-60;
            }
            else if(modY > diviseur/2){
-               pt.y = y - modY + diviseur ;
+               yReel = yReel - modY + diviseur ;
+               pt.y = pan.getHeight()-yReel-60 ;
            }
        }
        
@@ -277,15 +301,14 @@ public class Fenetre extends JFrame {
                 }
                 else if (e.getClickCount() == 1){
                     if (outil != null){
+                        // Annuler l'aligment sur la grille dans le cas des sélections/suppressions:
+                        x = e.getX();
+                        y = e.getY();
+                        majSegPtSelection(x,y);
                         switch (outil){
                             case "Segment":
-                                majSegPtSelection(x,y);
                                 break;
                             case "Gomme":
-                                // Annuler l'aligment sur la grille dans le cas des suppressions:
-                                x = e.getX();
-                                y = e.getY();
-                                majSegPtSelection(x,y);
                                 for (int i = 0;i<pan.matrix.seg.size();i++){
                                     Segment segm = (Segment) pan.matrix.seg.get(i);
                                     if (segm.p1Selected || segm.p2Selected ){

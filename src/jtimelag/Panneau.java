@@ -78,10 +78,18 @@ public class Panneau extends JPanel {
             }
             
              g2d.drawImage(waveForm, null, 0, this.getHeight() - 60);
+             
+             // Position de lecture           
+             g2d.setColor(Color.GREEN);
+             int nbSamplePerLine = (int)(wavSamplesLoader.audioInputStream.getFrameLength() / waveForm.getWidth());
+             int clipPos = Fenetre.player.clip.getFramePosition();
+             int p = clipPos / nbSamplePerLine ;
+             g2d.drawLine(p, this.getHeight()-60, p, this.getHeight());
+             
 
              // Quadrillage
             g2d.setColor(Color.DARK_GRAY);
-            for (int i = 0; i<this.getHeight()-60; i = i + Fenetre.pasGrille){
+            for (int i = this.getHeight()-60; i>0; i = i - Fenetre.pasGrille){
                 g2d.drawLine(0, i, this.getWidth(), i);
             }
             for (int i = 0; i<this.getWidth(); i = i + Fenetre.pasGrille){
@@ -149,8 +157,12 @@ public class Panneau extends JPanel {
                 g2d.drawLine(x2, hauteurTriangle, x2, this.getHeight());
 
                 g2d.setColor(Color.GREEN);
-                g2d.drawRect(x1-3,y1-3, 6, 6);
-                g2d.drawRect(x2-3,y2-3, 6, 6);
+                if(segm.p1Selected){
+                    g2d.drawRect(x1-3,y1-3, 6, 6);
+                }
+                else if(segm.p2Selected){
+                    g2d.drawRect(x2-3,y2-3, 6, 6);
+                }
             }
         }
     }
