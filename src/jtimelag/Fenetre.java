@@ -17,15 +17,14 @@ public class Fenetre extends JFrame {
     JButton btLoad = new JButton();
     JButton btStop = new JButton();
     JButton btPause = new JButton();
-    Panneau pan;
-    JPanel waveForm;
+    JSplitPane splitPane = new JSplitPane();
+    public static Panneau pan;
+    public static WaveForm waveForm;
     JSpinner jsPasGrille = new JSpinner();
     Timer timer;
     
     static String outil;
     public static int pasGrille;
-//    public static ArrayList seg = new ArrayList();
-//    public static ArrayList matrix = new ArrayList();
      
     final JFileChooser fc = new JFileChooser();
     
@@ -44,6 +43,14 @@ public class Fenetre extends JFrame {
         pan = new Panneau();
         pan.setBackground(Color.GRAY);
         
+        waveForm = new WaveForm();
+        waveForm.setBackground(Color.GRAY);
+                
+        splitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        splitPane.setDividerLocation(400);
+        splitPane.setLeftComponent(pan);
+        splitPane.setRightComponent(waveForm);
+               
         radioButtonSegment.setBackground(Color.LIGHT_GRAY);
         radioButtonSegment.setText("Segment");
         
@@ -75,7 +82,7 @@ public class Fenetre extends JFrame {
         JPanel panneauDessin = new JPanel();
         panneauDessin.setLayout(new GridLayout(1,1,0,2));
        
-        panneauDessin.add(pan);
+        panneauDessin.add(splitPane);
         
         setLayout(new BorderLayout (5,5));
         add(panneauOutils, BorderLayout.WEST);
@@ -101,6 +108,13 @@ public class Fenetre extends JFrame {
             @Override
             public void stateChanged(ChangeEvent evt) {
                 jsPasGrilleStateChanged(evt);
+            }
+        });
+        
+        splitPane.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
+            @Override
+            public void propertyChange(java.beans.PropertyChangeEvent evt) {
+                splitPanePropertyChange(evt);
             }
         });
         
@@ -155,14 +169,16 @@ public class Fenetre extends JFrame {
         });
     }
     
+    private void splitPanePropertyChange(java.beans.PropertyChangeEvent evt) {                                           
+        waveForm.refreshWaveForm = true;
+    } 
+        
     private void btLoadActionPerformed(ActionEvent evt) throws IOException, LineUnavailableException {
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
             player = new Player(file);
             wavSamplesLoader = new WavSamplesLoader(file);
-//            matrix.clear();
-//            matrix.add(new Matrix(wavSamplesLoader.audioInputStream.available() / wavSamplesLoader.audioInputStream.getFormat().getFrameSize()));
             repaint();
         }
     }   
@@ -229,14 +245,14 @@ public class Fenetre extends JFrame {
     }                                 
     
     public boolean CheckArea(Point p){
-        // Verifier si le point est hors la zone interdite
+        // Verifier si le point est dans la zone autorisée
         boolean check = true;
         int x = p.x;
         int y = p.y;
         //Offset y
-        int yOff = y + pan.getWidth()-pan.getHeight()+60;
+        int yOff = y + pan.getWidth()-pan.getHeight();
         
-        if (x+yOff < pan.getWidth() || y > pan.getHeight()-60 ){
+        if (x+yOff < pan.getWidth() || y > pan.getHeight() ){
             check = false;
         }
         return check;
@@ -247,7 +263,7 @@ public class Fenetre extends JFrame {
        int y = pt.y;
        
        // Correction de y car la grille débute en bas:
-       int yReel = pan.getHeight()-y-60;
+       int yReel = pan.getHeight()-y;
 
        // Aligner position sur gille
        int diviseur = pasGrille;
@@ -265,11 +281,11 @@ public class Fenetre extends JFrame {
        if (modY > 0){
            if ( modY <= diviseur/2){
                yReel = yReel - modY;
-               pt.y = pan.getHeight()-yReel-60;
+               pt.y = pan.getHeight()-yReel;
            }
            else if(modY > diviseur/2){
                yReel = yReel - modY + diviseur ;
-               pt.y = pan.getHeight()-yReel-60 ;
+               pt.y = pan.getHeight()-yReel;
            }
        }
        
@@ -292,7 +308,7 @@ public class Fenetre extends JFrame {
                                 int h = pan.getHeight();
                                 int w = pan.getWidth();
                                 double segX = (double)x / (double)w;
-                                double segY = (double)(y+(w+60-h)) / (double)w;
+                                double segY = (double)(y+(w-h)) / (double)w;
                                 pan.matrix.seg.add(new Segment(segX, segY, segX, segY, false, true));
                                 repaint();
                                 break;
@@ -333,9 +349,9 @@ public class Fenetre extends JFrame {
             int h = pan.getHeight();
             int w = pan.getWidth();
             int x1 = (int)(segm.x1 * w);
-            int y1 = (int)(segm.y1 * w -(w+60-h));
+            int y1 = (int)(segm.y1 * w -(w-h));
             int x2 = (int)(segm.x2 * w);
-            int y2 = (int)(segm.y2 * w -(w+60-h));
+            int y2 = (int)(segm.y2 * w -(w-h));
             
             if (segm.p1Selected){
                 segm.p1Selected = false;
@@ -372,7 +388,7 @@ public class Fenetre extends JFrame {
                 int w = pan.getWidth();
                 
                 double segX = (double)x / (double)w;
-                double segY = (double)(y+(w+60-h)) / (double)w;
+                double segY = (double)(y+(w-h)) / (double)w;
                 
                  for (int i = 0;i<pan.matrix.seg.size();i++){
                      Segment segm = (Segment) pan.matrix.seg.get(i);
