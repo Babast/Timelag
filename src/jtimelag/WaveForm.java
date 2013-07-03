@@ -9,8 +9,7 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JPanel;
-import static jtimelag.Fenetre.wavSamplesLoader;
-import static jtimelag.Panneau.matrix;
+import static jtimelag.Fenetre.*;
 
 public class WaveForm extends JPanel{
     boolean refreshWaveForm;
@@ -37,7 +36,7 @@ public class WaveForm extends JPanel{
         int h = this.getHeight();
         int w = this.getWidth();
         
-        if (Fenetre.wavSamplesLoader != null){
+        if (wavSamplesLoader != null){
             
             // Waveform
             if(refreshWaveForm){
@@ -88,14 +87,14 @@ public class WaveForm extends JPanel{
             // Curseur de lecture
             g2d.setColor(Color.GREEN);
             int nbSamplePerLine = (int)(wavSamplesLoader.audioInputStream.getFrameLength() / w);
-            int clipPos = Fenetre.player.clip.getFramePosition();
+            int clipPos = player.clip.getFramePosition();
             int p = clipPos / nbSamplePerLine;
             g2d.drawLine(p, 0, p, w);
              
             
             // Curseurs segments
-            for (int i = 0; i<matrix.seg.size(); i++){
-                Segment segm = (Segment) matrix.seg.get(i);
+            for (int i = 0; i<pan.matrix.seg.size(); i++){
+                Segment segm = (Segment) pan.matrix.seg.get(i);
                 int hPan = Fenetre.pan.getHeight();
                 int x1 = (int)(segm.x1 * w);
                 int y1 = (int)(segm.y1 * w -(w-hPan));

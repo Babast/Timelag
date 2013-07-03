@@ -3,14 +3,18 @@ package jtimelag;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.sound.sampled.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 
 public class Fenetre extends JFrame {
+    JButton btOpen = new JButton();
+    JButton btSave = new JButton();
     JRadioButton radioButtonSegment = new JRadioButton(); 
     JRadioButton radioButtonGomme = new JRadioButton();
     JButton btPlay = new JButton();
@@ -25,8 +29,6 @@ public class Fenetre extends JFrame {
     
     static String outil;
     public static int pasGrille;
-     
-    final JFileChooser fc = new JFileChooser();
     
     File file;
     public static Player player;
@@ -50,7 +52,10 @@ public class Fenetre extends JFrame {
         splitPane.setDividerLocation(400);
         splitPane.setLeftComponent(pan);
         splitPane.setRightComponent(waveForm);
-               
+          
+        btOpen.setText("Ouvrir");       
+        btSave.setText("Enregistrer");  
+          
         radioButtonSegment.setBackground(Color.LIGHT_GRAY);
         radioButtonSegment.setText("Segment");
         
@@ -69,6 +74,8 @@ public class Fenetre extends JFrame {
         // Positions des composants:
         JPanel panneauOutils = new JPanel(new GridLayout(10,1,5,5));
         panneauOutils.setBackground(Color.LIGHT_GRAY);
+        panneauOutils.add(btOpen);
+        panneauOutils.add(btSave);
         panneauOutils.add(radioButtonSegment);
         panneauOutils.add(radioButtonGomme);
         panneauOutils.add(jsPasGrille);
@@ -90,6 +97,28 @@ public class Fenetre extends JFrame {
         add(panneauPlayer, BorderLayout.SOUTH);
         
         // Création des écouteurs d'événements:
+        btOpen.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    btOpenActionPerformed(evt);
+                } catch ( IOException | LineUnavailableException ex) {
+                    Logger.getLogger(Fenetre.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        
+        btSave.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    btSaveActionPerformed(evt);
+                } catch ( IOException | LineUnavailableException ex) {
+                    Logger.getLogger(Fenetre.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+                
         radioButtonSegment.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -172,8 +201,56 @@ public class Fenetre extends JFrame {
     private void splitPanePropertyChange(java.beans.PropertyChangeEvent evt) {                                           
         waveForm.refreshWaveForm = true;
     } 
+    
+    private void btOpenActionPerformed(ActionEvent evt) throws IOException, LineUnavailableException {
+        JFileChooser fc = new JFileChooser();
+        fc.setFileFilter(new FileNameExtensionFilter("Fichier TimeLag", "lag"));
+        fc.setAcceptAllFileFilterUsed(false);
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File lagFile = fc.getSelectedFile();
+            Scanner in = new Scanner(new FileReader(lagFile));
+            while (in.hasNext()){
+                String line = in.next();
+                String item[]=line.split(";");
+                pan.matrix.seg.add(new Segment(Double.parseDouble(item[0]), Double.parseDouble(item[1]), Double.parseDouble(item[2]), Double.parseDouble(item[3]), false, false));
+                repaint();
+            }
+        }
+       }      
+    
+    private void btSaveActionPerformed(ActionEvent evt) throws IOException, LineUnavailableException {
+        JFileChooser fc = new JFileChooser();
+        fc.setFileFilter(new FileNameExtensionFilter("Fichier TimeLag", "lag"));
+        fc.setAcceptAllFileFilterUsed(false);
+        int returnVal = fc.showOpenDialog(this);
+        if (returnVal == JFileChooser.APPROVE_OPTION) {
+            File f = fc.getSelectedFile();
+            String filePath = f.getPath();
+            if(!filePath.toLowerCase().endsWith(".lag"))
+            {
+                f = new File(filePath + ".lag");
+            }
+            BufferedWriter bw = new BufferedWriter(new FileWriter(new File(f.getPath()), false));
+            for(int i=0; i< pan.matrix.seg.size();i++){
+               Segment segm = (Segment) pan.matrix.seg.get(i);
+               double x1 = segm.x1;
+               double y1 = segm.y1;
+               double x2 = segm.x2;
+               double y2 = segm.y2;              
+               bw.write(x1+";"+y1+";"+x2+";"+y2);
+               if(i+1 < pan.matrix.seg.size()){
+                   bw.newLine();
+               }
+            }
+            bw.close();
+        }
+    }      
         
     private void btLoadActionPerformed(ActionEvent evt) throws IOException, LineUnavailableException {
+        JFileChooser fc = new JFileChooser();
+        fc.setFileFilter(new FileNameExtensionFilter("Fichier WAVE", "wav"));
+        fc.setAcceptAllFileFilterUsed(false);
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
