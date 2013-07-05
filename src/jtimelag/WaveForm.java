@@ -36,7 +36,10 @@ public class WaveForm extends JPanel{
         int h = this.getHeight();
         int w = this.getWidth();
         
+        
         if (wavSamplesLoader != null){
+            
+            Fenetre.jsZoomX.setMaximum((int)(wavSamplesLoader.audioInputStream.getFrameLength() / w));
             
             // Waveform
             if(refreshWaveForm){
@@ -50,13 +53,14 @@ public class WaveForm extends JPanel{
                 if (wavSamplesLoader.audioInputStream.markSupported()) {
                     try {
                         wavSamplesLoader.audioInputStream.reset();
+                        wavSamplesLoader.audioInputStream.skip(wavSamplesLoader.audioInputStream.getFormat().getFrameSize()*posX);
                     } catch (IOException ex) {
                         Logger.getLogger(Panneau.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
 
                 gWaveForm.setColor(Color.RED);
-                int nbSamplePerLine = (int)(wavSamplesLoader.audioInputStream.getFrameLength() / w);
+                int nbSamplePerLine = zoomX;
                 int y1,y2;
 
                 for (int i = 0; i < w; i++){
@@ -64,7 +68,7 @@ public class WaveForm extends JPanel{
                     y1=0;
                     y2=0;
                     for(int j = 0; (j < wavSamples.length); j++){
-                        int yValue = (int)(wavSamples[j] * bufWaveForm.getHeight()/2);
+                        int yValue = (int)(wavSamples[j] * bufWaveForm.getHeight()/2 * zoomY);
                         if(yValue > y1){
                             y1 = yValue ;
                         }
@@ -86,9 +90,13 @@ public class WaveForm extends JPanel{
             
             // Curseur de lecture
             g2d.setColor(Color.GREEN);
-            int nbSamplePerLine = (int)(wavSamplesLoader.audioInputStream.getFrameLength() / w);
+            int nbSamplePerLine = zoomX;
             int clipPos = player.clip.getFramePosition();
-            int p = clipPos / nbSamplePerLine;
+            int p = (clipPos-posX) / nbSamplePerLine;
+            if(p>w){
+                Fenetre.jsPosX.setValue(Fenetre.jsPosX.getValue()+p*nbSamplePerLine);
+                return;
+            }
             g2d.drawLine(p, 0, p, w);
              
             

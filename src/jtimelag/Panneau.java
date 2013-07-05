@@ -2,8 +2,7 @@ package jtimelag;
 
 import java.awt.*;
 import javax.swing.*;
-import static jtimelag.Fenetre.player;
-import static jtimelag.Fenetre.wavSamplesLoader;
+import static jtimelag.Fenetre.*;
 
 public class Panneau extends JPanel {
     Matrix matrix;
@@ -99,14 +98,14 @@ public class Panneau extends JPanel {
             }
         
          if (wavSamplesLoader != null){
-                         // Curseur de lecture
+            // Curseur de lecture
             g2d.setColor(Color.GREEN);
-            int nbSamplePerLine = (int)(wavSamplesLoader.audioInputStream.getFrameLength() / w);
+            int nbSamplePerLine = zoomX;
             int clipPos = player.clip.getFramePosition();
-            int p = clipPos / nbSamplePerLine;
+            int p = (clipPos-posX) / nbSamplePerLine;
             g2d.drawLine(p, 0, p, h);   
-         }
-
+         }         
+            
     }
     
 }

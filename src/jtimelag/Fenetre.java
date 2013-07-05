@@ -15,6 +15,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class Fenetre extends JFrame {
     JButton btOpen = new JButton();
     JButton btSave = new JButton();
+    JButton btNew = new JButton();
     JRadioButton radioButtonSegment = new JRadioButton(); 
     JRadioButton radioButtonGomme = new JRadioButton();
     JButton btPlay = new JButton();
@@ -22,13 +23,21 @@ public class Fenetre extends JFrame {
     JButton btStop = new JButton();
     JButton btPause = new JButton();
     JSplitPane splitPane = new JSplitPane();
+    JSplitPane spPlayer = new JSplitPane();
     public static Panneau pan;
     public static WaveForm waveForm;
     JSpinner jsPasGrille = new JSpinner();
+    public static JSlider jsZoomX = new JSlider(0,100);
+    public static JSlider jsZoomY = new JSlider(0,50);
+    public static JScrollBar jsPosX = new JScrollBar();
+       
     Timer timer;
     
     static String outil;
     public static int pasGrille;
+    public static int zoomX;
+    public static int zoomY;
+    public static int posX;
     
     File file;
     public static Player player;
@@ -54,7 +63,8 @@ public class Fenetre extends JFrame {
         splitPane.setRightComponent(waveForm);
           
         btOpen.setText("Ouvrir");       
-        btSave.setText("Enregistrer");  
+        btSave.setText("Enregistrer");
+        btNew.setText("Nouveau");  
           
         radioButtonSegment.setBackground(Color.LIGHT_GRAY);
         radioButtonSegment.setText("Segment");
@@ -66,19 +76,35 @@ public class Fenetre extends JFrame {
         jsPasGrille.setValue(10);
         pasGrille = (int)jsPasGrille.getValue();
         
+        jsZoomX.setToolTipText("Zoom X");
+        jsZoomX.setValue(100);
+        zoomX = (int)jsZoomX.getValue();
+        
+        jsZoomY.setToolTipText("Zoom Y");
+        jsZoomY.setValue(100);
+        zoomY = (int)jsZoomY.getValue();
+        
+        jsPosX.setToolTipText("Position X");
+        jsPosX.setOrientation(javax.swing.JScrollBar.HORIZONTAL);
+        posX = (int)jsPosX.getValue();
+               
         btLoad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/open.png")));
         btPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/play.png")));
         btStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/stop.png")));
         btPause.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/pause.png")));
+        
         
         // Positions des composants:
         JPanel panneauOutils = new JPanel(new GridLayout(10,1,5,5));
         panneauOutils.setBackground(Color.LIGHT_GRAY);
         panneauOutils.add(btOpen);
         panneauOutils.add(btSave);
+        panneauOutils.add(btNew);
         panneauOutils.add(radioButtonSegment);
         panneauOutils.add(radioButtonGomme);
         panneauOutils.add(jsPasGrille);
+        panneauOutils.add(jsZoomX);
+        panneauOutils.add(jsZoomY);
         
         JPanel panneauPlayer = new JPanel(new GridLayout(1,4,5,5));
         panneauPlayer.add(btLoad);
@@ -86,15 +112,20 @@ public class Fenetre extends JFrame {
         panneauPlayer.add(btPause);
         panneauPlayer.add(btStop);
         
+        spPlayer.setOrientation(JSplitPane.VERTICAL_SPLIT);
+        spPlayer.setDividerLocation(20);
+        spPlayer.setLeftComponent(jsPosX);
+        spPlayer.setRightComponent(panneauPlayer);
+        
         JPanel panneauDessin = new JPanel();
         panneauDessin.setLayout(new GridLayout(1,1,0,2));
-       
         panneauDessin.add(splitPane);
+       
         
         setLayout(new BorderLayout (5,5));
         add(panneauOutils, BorderLayout.WEST);
         add(panneauDessin, BorderLayout.CENTER);
-        add(panneauPlayer, BorderLayout.SOUTH);
+        add(spPlayer, BorderLayout.SOUTH);
         
         // Création des écouteurs d'événements:
         btOpen.addActionListener(new ActionListener() {
@@ -118,7 +149,18 @@ public class Fenetre extends JFrame {
                 }
             }
         });
-                
+        
+        btNew.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                try {
+                    btNewActionPerformed(evt);
+                } catch ( IOException | LineUnavailableException ex) {
+                    Logger.getLogger(Fenetre.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+        });
+        
         radioButtonSegment.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -140,6 +182,27 @@ public class Fenetre extends JFrame {
             }
         });
         
+        jsZoomX.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent evt) {
+                jsZoomXStateChanged(evt);
+            }
+        });
+        
+        jsZoomY.addChangeListener(new ChangeListener() {
+            @Override
+            public void stateChanged(ChangeEvent evt) {
+                jsZoomYStateChanged(evt);
+            }
+        });
+        
+        jsPosX.addAdjustmentListener(new AdjustmentListener() {
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent evt) {
+                jsPosXAdjustmentValueChanged(evt);
+            }
+        });
+     
         splitPane.addPropertyChangeListener(new java.beans.PropertyChangeListener() {
             @Override
             public void propertyChange(java.beans.PropertyChangeEvent evt) {
@@ -231,22 +294,27 @@ public class Fenetre extends JFrame {
             {
                 f = new File(filePath + ".lag");
             }
-            BufferedWriter bw = new BufferedWriter(new FileWriter(new File(f.getPath()), false));
-            for(int i=0; i< pan.matrix.seg.size();i++){
-               Segment segm = (Segment) pan.matrix.seg.get(i);
-               double x1 = segm.x1;
-               double y1 = segm.y1;
-               double x2 = segm.x2;
-               double y2 = segm.y2;              
-               bw.write(x1+";"+y1+";"+x2+";"+y2);
-               if(i+1 < pan.matrix.seg.size()){
-                   bw.newLine();
-               }
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(f.getPath()), false))) {
+                for(int i=0; i< pan.matrix.seg.size();i++){
+                   Segment segm = (Segment) pan.matrix.seg.get(i);
+                   double x1 = segm.x1;
+                   double y1 = segm.y1;
+                   double x2 = segm.x2;
+                   double y2 = segm.y2;              
+                   bw.write(x1+";"+y1+";"+x2+";"+y2);
+                   if(i+1 < pan.matrix.seg.size()){
+                       bw.newLine();
+                   }
+                }
             }
-            bw.close();
         }
-    }      
-        
+    } 
+    
+    private void btNewActionPerformed(ActionEvent evt) throws IOException, LineUnavailableException {
+        pan.matrix.seg.clear();
+        repaint(); 
+    }   
+      
     private void btLoadActionPerformed(ActionEvent evt) throws IOException, LineUnavailableException {
         JFileChooser fc = new JFileChooser();
         fc.setFileFilter(new FileNameExtensionFilter("Fichier WAVE", "wav"));
@@ -256,13 +324,18 @@ public class Fenetre extends JFrame {
             file = fc.getSelectedFile();
             player = new Player(file);
             wavSamplesLoader = new WavSamplesLoader(file);
-            repaint();
+            Fenetre.jsZoomX.setMaximum((int)(wavSamplesLoader.audioInputStream.getFrameLength() / pan.getWidth()));
+            jsZoomX.setValue(jsZoomX.getMaximum());
+            jsPosX.setMaximum((int)wavSamplesLoader.audioInputStream.getFrameLength());
+            jsPosX.setValue(0);
+            jsZoomY.setValue(0);
+            repaint();           
         }
     }   
         
     private void btPlayActionPerformed(ActionEvent evt) {
         player.clip.start();
-        timer = new Timer(40,new ActionListener() {
+        timer = new Timer(30,new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 TimerTickActionPerformed(evt);
@@ -319,8 +392,41 @@ public class Fenetre extends JFrame {
         else{
             jsPasGrille.setValue(1);
         }
-    }                                 
+    } 
     
+    private void jsZoomXStateChanged(ChangeEvent e) {                                  
+        if(jsZoomX.getValue() > 0){
+            zoomX = jsZoomX.getValue();
+            waveForm.refreshWaveForm = true;
+            repaint();
+        }
+        else{
+            jsZoomX.setValue(1);
+        }
+    }  
+    
+    private void jsZoomYStateChanged(ChangeEvent e) {                                  
+        if(jsZoomY.getValue() > 0){
+            zoomY = jsZoomY.getValue();
+            waveForm.refreshWaveForm = true;
+            repaint();
+        }
+        else{
+            jsZoomY.setValue(1);
+        }
+    }  
+    
+    private void jsPosXAdjustmentValueChanged(AdjustmentEvent e) {                                  
+        if((int)jsPosX.getValue() >= 0){
+            posX = (int)jsPosX.getValue();
+            waveForm.refreshWaveForm = true;
+            repaint();
+        }
+        else{
+            jsPosX.setValue(0);
+        }
+    }     
+        
     public boolean CheckArea(Point p){
         // Verifier si le point est dans la zone autorisée
         boolean check = true;
