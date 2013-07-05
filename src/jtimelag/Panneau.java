@@ -8,7 +8,7 @@ public class Panneau extends JPanel {
     Matrix matrix;
     
     Panneau(){
-        matrix = new Matrix();
+        matrix = new Matrix(this.getWidth(),this.getWidth());   
     }
     
     @Override
@@ -36,12 +36,12 @@ public class Panneau extends JPanel {
         // Triangle
         int[] x = new int[3];
         x[0]=0; 
-        x[1]=w; 
-        x[2]=w;
+        x[1]=(int)matrix.width;//w; 
+        x[2]=(int)matrix.width;//w;
         
         int[] y = new int[3];
         y[0]=h;
-        y[1]=h - w; 
+        y[1]=h - (int)matrix.width;//w; 
         y[2]=h;
         
         g2d.setColor(Color.WHITE);
@@ -52,14 +52,14 @@ public class Panneau extends JPanel {
         x = new int[4];
         x[0]=0; 
         x[1]=0; 
-        x[2]=w;
-        x[3]=w;
+        x[2]=(int)matrix.width;//w;
+        x[3]=(int)matrix.width;//w;
         
         y = new int[4];
         y[0]=h;
         y[1]=0; 
         y[2]=0;
-        y[3]=h-w;
+        y[3]=h-(int)matrix.width;//w;
         
         g2d.setColor(Color.BLACK);
         g2d.fillPolygon(new Polygon(x, y, x.length));   
