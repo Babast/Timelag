@@ -97,8 +97,10 @@ public class WaveForm extends JPanel{
                 Fenetre.jsPosX.setValue(Fenetre.jsPosX.getValue()+p*nbSamplePerLine);
                 return;
             }
-            g2d.drawLine(p, 0, p, w);
-             
+            if(zoomX>1){
+                g2d.drawLine(p, 0, p, w);  
+            }
+
             
             // Curseurs segments
             for (int i = 0; i<pan.matrix.seg.size(); i++){

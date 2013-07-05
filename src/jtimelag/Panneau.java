@@ -103,7 +103,9 @@ public class Panneau extends JPanel {
             int nbSamplePerLine = zoomX;
             int clipPos = player.clip.getFramePosition();
             int p = (clipPos-posX) / nbSamplePerLine;
-            g2d.drawLine(p, 0, p, h);   
+            if(zoomX>1){
+                g2d.drawLine(p, 0, p, h);  
+            }
          }         
             
     }

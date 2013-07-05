@@ -322,6 +322,11 @@ public class Fenetre extends JFrame {
         int returnVal = fc.showOpenDialog(this);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             file = fc.getSelectedFile();
+            if(wavSamplesLoader != null){
+                player.clip.close();
+                wavSamplesLoader.audioInputStream.close();
+                
+            }
             player = new Player(file);
             wavSamplesLoader = new WavSamplesLoader(file);
             Fenetre.jsZoomX.setMaximum((int)(wavSamplesLoader.audioInputStream.getFrameLength() / pan.getWidth()));
@@ -336,7 +341,7 @@ public class Fenetre extends JFrame {
         
     private void btPlayActionPerformed(ActionEvent evt) {
         player.clip.start();
-        timer = new Timer(30,new ActionListener() {
+        timer = new Timer(40,new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
                 TimerTickActionPerformed(evt);
