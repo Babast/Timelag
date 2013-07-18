@@ -224,6 +224,13 @@ public class Fenetre extends JFrame {
             }
         });
         
+        waveForm.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent evt) {
+                waveFormMousePressed(evt);
+            }
+        });
+                
         btLoad.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent evt) {
@@ -325,7 +332,6 @@ public class Fenetre extends JFrame {
             if(wavSamplesLoader != null){
                 player.clip.close();
                 wavSamplesLoader.audioInputStream.close();
-                
             }
             player = new Player(file);
             wavSamplesLoader = new WavSamplesLoader(file);
@@ -362,6 +368,7 @@ public class Fenetre extends JFrame {
     private void btStopActionPerformed(ActionEvent evt) throws IOException, LineUnavailableException {
         player.clip.stop();
         timer.stop();
+        player.clip.close();
         player = new Player(file);
     }  
     
@@ -531,6 +538,14 @@ public class Fenetre extends JFrame {
         
     }
     
+     public void waveFormMousePressed (MouseEvent e){       
+        if (Fenetre.wavSamplesLoader != null){
+            // Modifier la position de lecture
+            player.clip.setFramePosition(jsPosX.getValue()+e.getX()*zoomX);
+            repaint();
+        }
+     }
+        
     public void majSegPtSelection(int x, int y){
         // Mise à jour des selections de points de segments
         for (int i = 0;i<pan.matrix.seg.size();i++){

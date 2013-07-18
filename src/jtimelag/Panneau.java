@@ -107,7 +107,6 @@ public class Panneau extends JPanel {
                 g2d.drawLine(p, 0, p, h);  
             }
          }         
-            
     }
     
 }
