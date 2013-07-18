@@ -496,15 +496,15 @@ public class Fenetre extends JFrame {
                 Point ptAlign = PtAlign(e.getPoint());
                 int x = ptAlign.x;
                 int y = ptAlign.y; 
-
+                
                 if (e.getClickCount() == 2){
                     if (outil != null){
                         switch (outil){
                             case "Segment":
                                 int h = pan.getHeight();
                                 int w = pan.getWidth();
-                                double segX = (double)x / (double)w;
-                                double segY = (double)(y+(w-h)) / (double)w;
+                                double segX = x * zoomX + posX;
+                                double segY = (y + (pan.matrix.height / zoomX - h)) * zoomX;
                                 pan.matrix.seg.add(new Segment(segX, segY, segX, segY, false, true));
                                 repaint();
                                 break;
@@ -591,8 +591,8 @@ public class Fenetre extends JFrame {
                 int h = pan.getHeight();
                 int w = pan.getWidth();
                 
-                double segX = (double)x / (double)w;
-                double segY = (double)(y+(w-h)) / (double)w;
+                double segX = x * zoomX + posX ;
+                double segY = (y + (pan.matrix.height / zoomX - h)) * zoomX;
                 
                  for (int i = 0;i<pan.matrix.seg.size();i++){
                      Segment segm = (Segment) pan.matrix.seg.get(i);
