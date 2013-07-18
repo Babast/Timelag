@@ -109,4 +109,19 @@ public class Panneau extends JPanel {
          }         
     }
     
+    public int ObtenirPositionARejouer(int p, int idSeg){
+        int pp;
+        
+        Segment segm = (Segment) matrix.seg.get(idSeg);
+        
+        int p1x = (int)(segm.x1);
+        int p1y = (int)(segm.y1);
+        int p2x = (int)(segm.x2);
+        int p2y = (int)(segm.y2);
+
+        pp = p - ( p * ((p2y-p1y)/(p2x-p1x)) + p1y - p1x * ((p2y-p1y)/(p2x-p1x)));
+                
+        return pp;
+    }
+    
 }

@@ -538,7 +538,7 @@ public class Fenetre extends JFrame {
         
     }
     
-     public void waveFormMousePressed (MouseEvent e){       
+    public void waveFormMousePressed (MouseEvent e){       
         if (Fenetre.wavSamplesLoader != null){
             // Modifier la position de lecture
             player.clip.setFramePosition(jsPosX.getValue()+e.getX()*zoomX);
