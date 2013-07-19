@@ -71,10 +71,17 @@ public class Panneau extends JPanel {
         // Segments
         for (int i = 0;i<matrix.seg.size();i++){
             Segment segm = (Segment) matrix.seg.get(i);
-            int x1 = (int)((segm.x1 - posX) / zoomX) ;
-            int y1 = (int)((segm.y1)/zoomX - (pan.matrix.height / zoomX - h)) ; 
-            int x2 = (int)((segm.x2 - posX) / zoomX);
-            int y2 = (int)((segm.y2)/zoomX - (pan.matrix.height / zoomX - h));
+            
+            Point ptSegm1 = new Point ((int)segm.x1,(int)segm.y1);
+            Point ptSegm2 = new Point ((int)segm.x2,(int)segm.y2);
+            
+            Point ptPan1 = ObtenirPtPanViaPxMatrix(ptSegm1);
+            Point ptPan2 = ObtenirPtPanViaPxMatrix(ptSegm2);
+            
+            int x1 = ptPan1.x;
+            int y1 = ptPan1.y;
+            int x2 = ptPan2.x;
+            int y2 = ptPan2.y;
                 
             g2d.setColor(Color.MAGENTA);
             g2d.drawLine(x1, y1, x2, y2);

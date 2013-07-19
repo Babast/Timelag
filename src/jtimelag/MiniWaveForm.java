@@ -3,7 +3,6 @@ package jtimelag;
 import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
@@ -12,11 +11,11 @@ import java.util.logging.Logger;
 import javax.swing.JPanel;
 import static jtimelag.Fenetre.*;
 
-public class WaveForm extends JPanel{
+public class MiniWaveForm extends JPanel{
     boolean refreshWaveForm;
     BufferedImage bufWaveForm;
     
-    WaveForm(){
+    MiniWaveForm(){
         refreshWaveForm = true;
         this.addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
@@ -40,8 +39,6 @@ public class WaveForm extends JPanel{
         
         if (wavSamplesLoader != null){
             
-            Fenetre.jsZoomX.setMaximum((int)(wavSamplesLoader.audioInputStream.getFrameLength() / w));
-            
             // Waveform
             if(refreshWaveForm){
                 // Recalcul du waveform et stockage dans le bufferedImage
@@ -54,14 +51,13 @@ public class WaveForm extends JPanel{
                 if (wavSamplesLoader.audioInputStream.markSupported()) {
                     try {
                         wavSamplesLoader.audioInputStream.reset();
-                        wavSamplesLoader.audioInputStream.skip(wavSamplesLoader.audioInputStream.getFormat().getFrameSize()*posX);
                     } catch (IOException ex) {
                         Logger.getLogger(Panneau.class.getName()).log(Level.SEVERE, null, ex);
                     }
                 }
-
+                
                 gWaveForm.setColor(Color.RED);
-                int nbSamplePerLine = zoomX;
+                int nbSamplePerLine = (int) (wavSamplesLoader.audioInputStream.getFrameLength() / w);
                 int y1,y2;
 
                 for (int i = 0; i < w; i++){
@@ -91,41 +87,19 @@ public class WaveForm extends JPanel{
             
             // Curseur de lecture
             g2d.setColor(Color.GREEN);
-            int nbSamplePerLine = zoomX;
+            int nbSamplePerLine = (int) (wavSamplesLoader.audioInputStream.getFrameLength() / w);
             int clipPos = player.clip.getFramePosition();
-            int p = (clipPos-posX) / nbSamplePerLine;
-            if(p>w && player.clip.isRunning()){
-                Fenetre.jsPosX.setValue(Fenetre.jsPosX.getValue()+p*nbSamplePerLine);
-                return;
-            }
-            if(zoomX>1){
-                g2d.drawLine(p, 0, p, w);  
-            }
-
+            int p = clipPos / nbSamplePerLine;
+            g2d.drawLine(p, 0, p, w);       
             
-            // Curseurs segments
-            for (int i = 0; i<pan.matrix.seg.size(); i++){
-                Segment segm = (Segment) pan.matrix.seg.get(i);
-                int hPan = Fenetre.pan.getHeight();
-
-                Point ptSegm1 = new Point ((int)segm.x1,(int)segm.y1);
-                Point ptSegm2 = new Point ((int)segm.x2,(int)segm.y2);
-
-                Point ptPan1 = ObtenirPtPanViaPxMatrix(ptSegm1);
-                Point ptPan2 = ObtenirPtPanViaPxMatrix(ptSegm2);
-
-                int x1 = ptPan1.x;
-                int y1 = ptPan1.y;
-                int x2 = ptPan2.x;
-                int y2 = ptPan2.y;
-            
-                g2d.setColor(Color.ORANGE);
-                g2d.drawLine(x1 - (hPan- y1), 0 , x1 - (hPan- y1), h);
-                g2d.drawLine(x2 - (hPan- y2), 0, x2 - (hPan- y2), h);
-                g2d.setColor(Color.RED);
-                g2d.drawLine(x1, 0, x1, h);
-                g2d.drawLine(x2, 0, x2, h);
-            }
+            // Zone active
+            g2d.setColor(Color.CYAN);
+            int x1 = posX/nbSamplePerLine;
+            int x2 = (posX + zoomX*pan.getWidth())/nbSamplePerLine;
+            g2d.drawLine(x1, 0, x2, 0);
+            g2d.drawLine(x2, 0, x2, h-1);
+            g2d.drawLine(x2, h-1, x1, h-1);
+            g2d.drawLine(x1, h-1, x1, 0);
         }
     }
     
