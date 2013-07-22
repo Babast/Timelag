@@ -379,6 +379,12 @@ public class Fenetre extends JFrame {
             }
         });
         timer.start();
+        
+//        double d[] = new double [(int)wavSamplesLoader.audioInputStream.getFrameLength()];
+//        for (int i = 0; i < d.length; i++){
+//            
+//        }
+//        StdAudio.play(d);
     }
     
     private void TimerTickActionPerformed(ActionEvent evt) {
