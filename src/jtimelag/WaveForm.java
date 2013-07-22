@@ -37,7 +37,8 @@ public class WaveForm extends JPanel{
         int h = this.getHeight();
         int w = this.getWidth();
         
-        
+        int pY = posY / zoomX;
+         
         if (wavSamplesLoader != null){
             
             Fenetre.jsZoomX.setMaximum((int)(wavSamplesLoader.audioInputStream.getFrameLength() / w));
@@ -120,8 +121,8 @@ public class WaveForm extends JPanel{
                 int y2 = ptPan2.y;
             
                 g2d.setColor(Color.ORANGE);
-                g2d.drawLine(x1 - (hPan- y1), 0 , x1 - (hPan- y1), h);
-                g2d.drawLine(x2 - (hPan- y2), 0, x2 - (hPan- y2), h);
+                g2d.drawLine(x1 - (hPan+pY- y1), 0 , x1 - (hPan+pY- y1), h);
+                g2d.drawLine(x2 - (hPan+pY- y2), 0, x2 - (hPan+pY- y2), h);
                 g2d.setColor(Color.RED);
                 g2d.drawLine(x1, 0, x1, h);
                 g2d.drawLine(x2, 0, x2, h);

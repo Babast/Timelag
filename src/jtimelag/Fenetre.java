@@ -17,7 +17,6 @@ public class Fenetre extends JFrame {
     JButton btSave = new JButton();
     JButton btNew = new JButton();
     JRadioButton radioButtonSegment = new JRadioButton(); 
-    JRadioButton radioButtonGomme = new JRadioButton();
     JButton btPlay = new JButton();
     JButton btLoad = new JButton();
     JButton btStop = new JButton();
@@ -31,6 +30,7 @@ public class Fenetre extends JFrame {
     public static JSlider jsZoomX = new JSlider(0,100);
     public static JSlider jsZoomY = new JSlider(0,50);
     public static JScrollBar jsPosX = new JScrollBar();
+    public static JScrollBar jsPosY = new JScrollBar();
        
     Timer timer;
     
@@ -39,6 +39,7 @@ public class Fenetre extends JFrame {
     public static int zoomX;
     public static int zoomY;
     public static int posX;
+    public static int posY;
     
     File file;
     public static Player player;
@@ -73,9 +74,6 @@ public class Fenetre extends JFrame {
         radioButtonSegment.setBackground(Color.LIGHT_GRAY);
         radioButtonSegment.setText("Segment");
         
-        radioButtonGomme.setBackground(Color.LIGHT_GRAY);
-        radioButtonGomme.setText("Gomme");
-        
         jsPasGrille.setToolTipText("Pas de la grille");
         jsPasGrille.setValue(10);
         pasGrille = (int)jsPasGrille.getValue();
@@ -91,7 +89,11 @@ public class Fenetre extends JFrame {
         jsPosX.setToolTipText("Position X");
         jsPosX.setOrientation(javax.swing.JScrollBar.HORIZONTAL);
         posX = (int)jsPosX.getValue();
-               
+           
+        jsPosY.setToolTipText("Position Y");
+        jsPosY.setOrientation(javax.swing.JScrollBar.VERTICAL);
+        posY = (int)jsPosY.getValue();
+        
         btLoad.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/open.png")));
         btPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/play.png")));
         btStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/stop.png")));
@@ -105,7 +107,6 @@ public class Fenetre extends JFrame {
         panneauOutils.add(btSave);
         panneauOutils.add(btNew);
         panneauOutils.add(radioButtonSegment);
-        panneauOutils.add(radioButtonGomme);
         panneauOutils.add(jsPasGrille);
         panneauOutils.add(jsZoomX);
         panneauOutils.add(jsZoomY);
@@ -121,7 +122,7 @@ public class Fenetre extends JFrame {
         spPlayer.setDividerLocation(20);
         spPlayer.setLeftComponent(jsPosX);
         spPlayer.setRightComponent(panneauPlayer);
-        
+                
         JPanel panneauDessin = new JPanel();
         panneauDessin.setLayout(new GridLayout(1,1,0,2));
         panneauDessin.add(splitPane);
@@ -131,6 +132,7 @@ public class Fenetre extends JFrame {
         add(panneauOutils, BorderLayout.WEST);
         add(panneauDessin, BorderLayout.CENTER);
         add(spPlayer, BorderLayout.SOUTH);
+        add(jsPosY, BorderLayout.EAST);
         
         // Création des écouteurs d'événements:
         btOpen.addActionListener(new ActionListener() {
@@ -173,13 +175,6 @@ public class Fenetre extends JFrame {
             }
         });
         
-        radioButtonGomme.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent evt) {
-                radioButtonGommeActionPerformed(evt);
-            }
-        });
-        
         jsPasGrille.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent evt) {
@@ -205,6 +200,13 @@ public class Fenetre extends JFrame {
             @Override
             public void adjustmentValueChanged(AdjustmentEvent evt) {
                 jsPosXAdjustmentValueChanged(evt);
+            }
+        });
+        
+        jsPosY.addAdjustmentListener(new AdjustmentListener() {
+            @Override
+            public void adjustmentValueChanged(AdjustmentEvent evt) {
+                jsPosYAdjustmentValueChanged(evt);
             }
         });
      
@@ -350,6 +352,8 @@ public class Fenetre extends JFrame {
             jsPosX.setMaximum((int)wavSamplesLoader.audioInputStream.getFrameLength());
             jsPosX.setValue(0);
             jsZoomY.setValue(0);
+            jsPosY.setMaximum((int)wavSamplesLoader.audioInputStream.getFrameLength());
+            jsPosY.setValue(jsPosY.getMaximum());
             pan.matrix = new Matrix(wavSamplesLoader.audioInputStream.getFrameLength(),wavSamplesLoader.audioInputStream.getFrameLength());   
             repaint();           
         }
@@ -390,17 +394,6 @@ public class Fenetre extends JFrame {
     private void radioButtonSegmentActionPerformed(ActionEvent evt) {
         if (radioButtonSegment.isSelected()){
              outil = "Segment";
-             radioButtonGomme.setSelected(false);
-         }
-         else{
-             outil = "";
-         }
-    }
-    
-    private void radioButtonGommeActionPerformed(ActionEvent evt) {
-         if (radioButtonGomme.isSelected()){
-             outil = "Gomme";
-             radioButtonSegment.setSelected(false);
          }
          else{
              outil = "";
@@ -450,60 +443,75 @@ public class Fenetre extends JFrame {
         }
     }     
         
+    private void jsPosYAdjustmentValueChanged(AdjustmentEvent e) {                                  
+        if((int)jsPosY.getValue() >= 0){
+            posY = (int)jsPosY.getMaximum() - jsPosY.getValue();
+            repaint();
+        }
+        else{
+            jsPosY.setValue(0);
+        }
+    }   
+    
     public boolean CheckArea(Point p){
         // Verifier si le point est dans la zone autorisée
-        boolean check = true;
-        int x = p.x;
-        int y = p.y;
-        //Offset y
-        int yOff = y + pan.getWidth()-pan.getHeight();
+        boolean check = false;
         
-        if (x+yOff < pan.getWidth() || y > pan.getHeight() ){
-            check = false;
+        Point ptMatrix = ObtenirPtMatrixViaPtPan(p);
+        ptMatrix.y = (int) pan.matrix.height - ptMatrix.y;
+
+        if ((double)ptMatrix.x / (double)ptMatrix.y >= 1){
+            check = true;
         }
         return check;
     }
     
-    public void panMousePressed (MouseEvent e){       
+    public void panMousePressed (MouseEvent e){
+
+        // Verifier qu'un WAV est chargé
         if (Fenetre.wavSamplesLoader != null){
+            
+            // Vérifier que le point est dans la zone autorisée
             if (CheckArea(e.getPoint())){
-                // Aligner point sur la grille
-                Point ptAlign = PtAlign(e.getPoint());
                 
-                if (e.getClickCount() == 2){
+                // Double clic gauche: Création d'un élément
+                if (e.getButton() == 1 && e.getClickCount() == 2){ 
                     if (outil != null){
                         switch (outil){
-                            case "Segment":
-                                // Ajouter un nouveau segment à la collection:
-                                Point ptMatrix = ObtenirPtMatrixViaPtPan(ptAlign);
-                                pan.matrix.seg.add(new Segment(ptMatrix.x, ptMatrix.y, ptMatrix.x, ptMatrix.y, false, true));
-                                repaint();
-                                break;
-                        }
-                    }
-                }
-                else if (e.getClickCount() == 1){
-                    if (outil != null){
-                        // Annuler l'aligment sur la grille dans le cas des sélections/suppressions:
-                        majSegPtSelection(e.getX(), e.getY());
-                        
-                        switch (outil){
-                            case "Segment":
-                                break;
-                            case "Gomme":
-                                // Supprimer le segment selectionné
-                                for (int i = 0;i<pan.matrix.seg.size();i++){
-                                    Segment segm = (Segment) pan.matrix.seg.get(i);
-                                    if (segm.p1Selected || segm.p2Selected ){
-                                        pan.matrix.seg.remove(i);
-                                    } 
-                                 }
+                        case "Segment":
+                            // Aligner point sur la grille
+                            Point ptAlign = PtAlign(e.getPoint());
+                            // Ajouter un nouveau segment à la collection:
+                            Point ptMatrix = ObtenirPtMatrixViaPtPan(ptAlign);
+                            pan.matrix.seg.add(new Segment(ptMatrix.x, ptMatrix.y, ptMatrix.x, ptMatrix.y, false, true));
                             break;
-                                
                         }
-                        repaint();
+                    }   
+                }
+                
+                // Simple clic gauche: Sélection d'un élément
+                else if (e.getButton() == 1 && e.getClickCount() == 1){
+                     majSegPtSelection(e.getX(), e.getY());
+                 }
+                
+                // Simple clic droit: Suppression d'un élément
+                else if (e.getButton() == 3 && e.getClickCount() == 1){
+                    // Supprimer le segment selectionné
+                    majSegPtSelection(e.getX(), e.getY());
+                    if (outil != null){
+                        switch (outil){
+                        case "Segment":
+                            for (int i = 0;i<pan.matrix.seg.size();i++){
+                                Segment segm = (Segment) pan.matrix.seg.get(i);
+                                if (segm.p1Selected || segm.p2Selected ){
+                                    pan.matrix.seg.remove(i);
+                                }
+                            }
+                            break;
+                        }
                     }
                 }
+                repaint();
             }
         }
         
@@ -587,16 +595,17 @@ public class Fenetre extends JFrame {
     }
 
     public Point PtAlign(Point pt){
+
        int x = pt.x;
        int y = pt.y;
        
        // Correction de y car la grille débute en bas:
        int yReel = pan.getHeight()-y;
-
+       
        // Aligner position sur gille
        int diviseur = pasGrille;
-       int modX = x%diviseur;
-       int modY = yReel%diviseur;
+       int modX = (x+(posX/zoomX))%diviseur;
+       int modY = (yReel+(posY/zoomX))%diviseur;
         
        if (modX > 0){
            if ( modX <= diviseur/2){
@@ -616,18 +625,20 @@ public class Fenetre extends JFrame {
                pt.y = pan.getHeight()-yReel;
            }
        }
-       
+
        return pt;
     
     }
      
     public static Point ObtenirPtMatrixViaPtPan(Point ptPan){
         
+        int pY = posY / zoomX;
+        
         int hPan = pan.getHeight();
         long hMatrix = pan.matrix.height;
-         
+        
         int x = (int) (ptPan.x * zoomX + posX);
-        int y = (int) ((ptPan.y + (hMatrix / zoomX - hPan)) * zoomX);
+        int y = (int) ((ptPan.y - pY + (hMatrix / zoomX - hPan)) * zoomX );
         
         Point ptMatrix = new Point (x,y); 
         
@@ -636,11 +647,13 @@ public class Fenetre extends JFrame {
     
     public static Point ObtenirPtPanViaPxMatrix(Point ptMatrix){
         
+        int pY = posY / zoomX;
+        
         int hPan = pan.getHeight();
         long hMatrix = pan.matrix.height;
         
         int x = (int)((ptMatrix.x - posX) / zoomX) ;
-        int y = (int)((ptMatrix.y)/zoomX - (hMatrix / zoomX - hPan)) ; 
+        int y = (int)((ptMatrix.y)/zoomX - (hMatrix / zoomX - hPan)) + pY ; 
         
         Point ptPan = new Point (x,y); 
         

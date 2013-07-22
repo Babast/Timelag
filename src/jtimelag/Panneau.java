@@ -26,17 +26,17 @@ public class Panneau extends JPanel {
                 
         int nbSamplePerLine = zoomX;
         int p = posX / nbSamplePerLine;
-        
+        int pY = posY / nbSamplePerLine;
         
         // Quadrillage
         g2d.setColor(Color.DARK_GRAY);
         // Lignes horizontales
-        for (int i = h; i>0; i = i - Fenetre.pasGrille){
+        for (int i = h+pY; i>0; i = i - Fenetre.pasGrille){
             g2d.drawLine(0, i, w, i);
         }
         //Lignes verticales
-        for (int i = 0; i<w; i = i + Fenetre.pasGrille){
-            g2d.drawLine(i, 0, i, h);
+        for (int i = 0-p; i<w+p; i = i + Fenetre.pasGrille){
+            g2d.drawLine(i, 0, i, h+pY);
         }
         
         // Triangle
@@ -46,9 +46,9 @@ public class Panneau extends JPanel {
         x[2] = matrixW - p;
         
         int[] y = new int[3];
-        y[0] = h;
-        y[1] = 0 - (matrixH - h);
-        y[2] = h;
+        y[0] = h+pY;
+        y[1] = 0 - (matrixH - h+pY);
+        y[2] = h+pY;
         
         g2d.setColor(Color.WHITE);
         g2d.drawPolygon(new Polygon(x, y, x.length));     
@@ -61,9 +61,9 @@ public class Panneau extends JPanel {
         x[2] = matrixW - p;
         
         y = new int[3];
-        y[0] = h;
-        y[1] = 0 - (matrixH - h); 
-        y[2] = 0 - (matrixH - h);
+        y[0] = h+pY;
+        y[1] = 0 - (matrixH - h+pY); 
+        y[2] = 0 - (matrixH - h+pY);
         
         g2d.setColor(Color.BLACK);
         g2d.fillPolygon(new Polygon(x, y, x.length));   
@@ -92,13 +92,6 @@ public class Panneau extends JPanel {
             g2d.drawLine(x2, y2,  x2 - (h- y2),h);
             g2d.drawLine(x2, y2, x2, h);
 
-            g2d.setColor(Color.ORANGE);
-            g2d.drawLine(x1 - (h- y1), h , x1 - (h- y1), h);
-            g2d.drawLine(x2 - (h- y2), h, x2 - (h- y2), h);
-            g2d.setColor(Color.RED);
-            g2d.drawLine(x1, h, x1, h);
-            g2d.drawLine(x2, h, x2, h);
-
             g2d.setColor(Color.GREEN);
             if(segm.p1Selected){
                 g2d.drawRect(x1-3,y1-3, 6, 6);
@@ -116,7 +109,8 @@ public class Panneau extends JPanel {
             if(zoomX>1){
                 g2d.drawLine(p, 0, p, h);  
             }
-         }         
+         }
+         
     }
     
     public int ObtenirPositionARejouer(int p, int idSeg){
