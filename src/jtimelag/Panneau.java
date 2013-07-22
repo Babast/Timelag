@@ -83,7 +83,7 @@ public class Panneau extends JPanel {
             int x2 = ptPan2.x;
             int y2 = ptPan2.y;
                 
-            g2d.setColor(Color.MAGENTA);
+            g2d.setColor(segm.color);
             g2d.drawLine(x1, y1, x2, y2);
 
             g2d.setColor(Color.cyan);

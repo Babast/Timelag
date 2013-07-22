@@ -107,6 +107,9 @@ public class WaveForm extends JPanel{
             // Curseurs segments
             for (int i = 0; i<pan.matrix.seg.size(); i++){
                 Segment segm = (Segment) pan.matrix.seg.get(i);
+//                if(segm.p1Selected || segm.p2Selected){
+//                
+//                }
                 int hPan = Fenetre.pan.getHeight();
 
                 Point ptSegm1 = new Point ((int)segm.x1,(int)segm.y1);

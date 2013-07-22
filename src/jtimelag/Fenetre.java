@@ -17,6 +17,7 @@ public class Fenetre extends JFrame {
     JButton btSave = new JButton();
     JButton btNew = new JButton();
     JRadioButton radioButtonSegment = new JRadioButton(); 
+    JButton btColor = new JButton();
     JButton btPlay = new JButton();
     JButton btLoad = new JButton();
     JButton btStop = new JButton();
@@ -31,7 +32,7 @@ public class Fenetre extends JFrame {
     public static JSlider jsZoomY = new JSlider(0,50);
     public static JScrollBar jsPosX = new JScrollBar();
     public static JScrollBar jsPosY = new JScrollBar();
-       
+        
     Timer timer;
     
     static String outil;
@@ -40,7 +41,7 @@ public class Fenetre extends JFrame {
     public static int zoomY;
     public static int posX;
     public static int posY;
-    
+    public static Color segColor;
     File file;
     public static Player player;
     public static WavSamplesLoader wavSamplesLoader;
@@ -73,6 +74,8 @@ public class Fenetre extends JFrame {
           
         radioButtonSegment.setBackground(Color.LIGHT_GRAY);
         radioButtonSegment.setText("Segment");
+        
+        btColor.setBackground(Color.MAGENTA);
         
         jsPasGrille.setToolTipText("Pas de la grille");
         jsPasGrille.setValue(10);
@@ -107,6 +110,7 @@ public class Fenetre extends JFrame {
         panneauOutils.add(btSave);
         panneauOutils.add(btNew);
         panneauOutils.add(radioButtonSegment);
+        panneauOutils.add(btColor);
         panneauOutils.add(jsPasGrille);
         panneauOutils.add(jsZoomX);
         panneauOutils.add(jsZoomY);
@@ -175,6 +179,13 @@ public class Fenetre extends JFrame {
             }
         });
         
+        btColor.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                btColorActionPerformed(evt);
+            }
+        });
+                
         jsPasGrille.addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent evt) {
@@ -294,8 +305,8 @@ public class Fenetre extends JFrame {
                 long y1 = Long.parseLong(item[1]);
                 long x2 = Long.parseLong(item[2]);
                 long y2 = Long.parseLong(item[3]);
-                
-                pan.matrix.seg.add(new Segment(x1, y1, x2, y2, false, false));
+                //Color color = (Color)item[4];
+                pan.matrix.seg.add(new Segment(x1, y1, x2, y2,Color.magenta, false, false));
                 repaint();
             }
         }
@@ -400,6 +411,11 @@ public class Fenetre extends JFrame {
          }
     }
     
+    private void btColorActionPerformed(ActionEvent evt) {
+        segColor = JColorChooser.showDialog(this, "Pick a Color", Color.GREEN);
+        btColor.setBackground(segColor);
+    }
+        
     private void jsPasGrilleStateChanged(ChangeEvent e) {                                  
         if((int)jsPasGrille.getValue() > 0){
             pasGrille = (int)jsPasGrille.getValue();
@@ -483,7 +499,7 @@ public class Fenetre extends JFrame {
                             Point ptAlign = PtAlign(e.getPoint());
                             // Ajouter un nouveau segment à la collection:
                             Point ptMatrix = ObtenirPtMatrixViaPtPan(ptAlign);
-                            pan.matrix.seg.add(new Segment(ptMatrix.x, ptMatrix.y, ptMatrix.x, ptMatrix.y, false, true));
+                            pan.matrix.seg.add(new Segment(ptMatrix.x, ptMatrix.y, ptMatrix.x, ptMatrix.y, segColor, false, true));
                             break;
                         }
                     }   
