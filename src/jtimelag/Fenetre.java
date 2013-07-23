@@ -22,6 +22,7 @@ public class Fenetre extends JFrame {
     JButton btLoad = new JButton();
     JButton btStop = new JButton();
     JButton btPause = new JButton();
+    JButton btAppliquer = new JButton();
     JSplitPane splitPane = new JSplitPane();
     JSplitPane spPlayer = new JSplitPane();
     public static Panneau pan;
@@ -41,7 +42,7 @@ public class Fenetre extends JFrame {
     public static int zoomY;
     public static int posX;
     public static int posY;
-    public static Color segColor;
+    public static Color segColor = Color.MAGENTA;
     File file;
     public static Player player;
     public static WavSamplesLoader wavSamplesLoader;
@@ -101,7 +102,7 @@ public class Fenetre extends JFrame {
         btPlay.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/play.png")));
         btStop.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/stop.png")));
         btPause.setIcon(new javax.swing.ImageIcon(getClass().getResource("/jtimelag/pause.png")));
-        
+        btAppliquer.setText("Résultat");
         
         // Positions des composants:
         JPanel panneauOutils = new JPanel(new GridLayout(10,1,5,5));
@@ -116,11 +117,12 @@ public class Fenetre extends JFrame {
         panneauOutils.add(jsZoomY);
         panneauOutils.add(miniWaveForm);
         
-        JPanel panneauPlayer = new JPanel(new GridLayout(1,4,5,5));
+        JPanel panneauPlayer = new JPanel(new GridLayout(1,5,5,5));
         panneauPlayer.add(btLoad);
         panneauPlayer.add(btPlay);
         panneauPlayer.add(btPause);
         panneauPlayer.add(btStop);
+        panneauPlayer.add(btAppliquer);
         
         spPlayer.setOrientation(JSplitPane.VERTICAL_SPLIT);
         spPlayer.setDividerLocation(20);
@@ -284,6 +286,13 @@ public class Fenetre extends JFrame {
                 btPauseActionPerformed(evt);
             }
         });
+        
+        btAppliquer.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent evt) {
+                btAppliquerActionPerformed(evt);
+            }
+        });
     }
     
     private void splitPanePropertyChange(java.beans.PropertyChangeEvent evt) {                                           
@@ -324,7 +333,7 @@ public class Fenetre extends JFrame {
             {
                 f = new File(filePath + ".lag");
             }
-            try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(f.getPath()), false))) {
+            try (BufferedWriter bw = new BufferedWriter(new FileWriter(new File(f.getPath()), false))) {                
                 for(int i=0; i< pan.matrix.seg.size();i++){
                    Segment segm = (Segment) pan.matrix.seg.get(i);
                    long x1 = segm.x1;
@@ -379,12 +388,6 @@ public class Fenetre extends JFrame {
             }
         });
         timer.start();
-        
-//        double d[] = new double [(int)wavSamplesLoader.audioInputStream.getFrameLength()];
-//        for (int i = 0; i < d.length; i++){
-//            
-//        }
-//        StdAudio.play(d);
     }
     
     private void TimerTickActionPerformed(ActionEvent evt) {
@@ -408,6 +411,12 @@ public class Fenetre extends JFrame {
         timer.stop();
     }  
         
+    private void btAppliquerActionPerformed(ActionEvent evt) {
+        // Lire le résultat
+        //StdAudio.play(AppliquerTransformation());
+        StdAudio.save(AppliquerTransformation(), "C:\\test.wav");
+    } 
+    
     private void radioButtonSegmentActionPerformed(ActionEvent evt) {
         if (radioButtonSegment.isSelected()){
              outil = "Segment";
@@ -681,5 +690,60 @@ public class Fenetre extends JFrame {
         
         return ptPan;
     }
+    
+    public double[] AppliquerTransformation() {
+        
+        if (wavSamplesLoader.audioInputStream.markSupported()) {
+            try {
+                wavSamplesLoader.audioInputStream.reset();
+            } catch (IOException ex) {
+                Logger.getLogger(Panneau.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        
+        int nbSamples = 1000000;//(int)wavSamplesLoader.audioInputStream.getFrameLength();
+        
+        double[] output= new double[nbSamples];
+        double valeurSource[] = wavSamplesLoader.getAudioSamples(output.length);
+
+        for (int p = 0; p < output.length; p++){
+            output[p] = valeurSource[p];
+            for (int j = 0; j<pan.matrix.seg.size(); j++){
+                Segment segm = (Segment) pan.matrix.seg.get(j);
+                if(p >= segm.x1 && p <= segm.x2 ){
+                    int pp = p-(p-ObtenirPositionARejouer(p,j));
+                    output[p] = valeurSource[pp];
+                }
+            }
+        }
+      
+        return output;
+        
+    }
+    
+    public int ObtenirPositionARejouer(int p, int idSeg){
+        int pp;
+        
+        Segment segm = (Segment) pan.matrix.seg.get(idSeg);
+        
+        int p1x = (int)(segm.x1);
+        int p1y = (int)pan.matrix.height - (int)(segm.y1);
+        int p2x = (int)(segm.x2);
+        int p2y = (int)pan.matrix.height - (int)(segm.y2);
+
+        if(p1x > p2x){
+            int tmpx = p1x;
+            p1x = p2x;
+            p2x = tmpx;
+            int tmpy = p1y;
+            p1y = p2y;
+            p2y = tmpy;
+        }
+        
+        pp = p - ( (p * ((p2y-p1y)/(p2x-p1x))) + p1y - (p1x * ((p2y-p1y)/(p2x-p1x))));
+                
+        return pp;  
+    }
+    
 }
 

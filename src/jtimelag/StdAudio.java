@@ -41,11 +41,11 @@ public class StdAudio {
     
     /** Play array d.
       Precondition. input is a .wav file, 44,100 samples
-      per second, 16-bit audio, mono, signed PCM, little
+      per second, 16-bit audio, 2 chanels, signed PCM, little
       Endian, with array values between -1 and 1.
       */
     public static void play(double[] d) {
-        AudioFormat format= new AudioFormat(FPS, 16, 1, true, false);
+        AudioFormat format= new AudioFormat(FPS, 16, 2, true, false);
         byte[] data= new byte[2 * d.length];
         for (int i= 0; i < d.length; i++) {
             int temp= (int) (d[i] * 32768.0);
@@ -58,10 +58,10 @@ public class StdAudio {
     /** Save array d as a .wav or .au file in file named f.
       Precondition: f ends in .wav or .au.
       Information: The file has 44,100 samples per second
-      and uses 16-bit audio, mono, signed PCM, little Endian
+      and uses 16-bit audio, 2 chanels, signed PCM, little Endian
       */
     public static void save(double[] d, String f) {
-        AudioFormat format= new AudioFormat(FPS, 16, 1, true, false);
+        AudioFormat format= new AudioFormat(FPS, 16, 2, true, false);
         byte[] data= new byte[2 * d.length];
         for (int i= 0; i < d.length; i++) {
             int temp= (int) (d[i] * 32768.0);
