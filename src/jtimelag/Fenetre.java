@@ -413,8 +413,8 @@ public class Fenetre extends JFrame {
         
     private void btAppliquerActionPerformed(ActionEvent evt) {
         // Lire le résultat
-        //StdAudio.play(AppliquerTransformation());
-        StdAudio.save(AppliquerTransformation(), "C:\\test.wav");
+        StdAudio.play(AppliquerTransformation());
+        //StdAudio.save(AppliquerTransformation(), "C:\\test.wav");
     } 
     
     private void radioButtonSegmentActionPerformed(ActionEvent evt) {
@@ -701,7 +701,7 @@ public class Fenetre extends JFrame {
             }
         }
         
-        int nbSamples = 1000000;//(int)wavSamplesLoader.audioInputStream.getFrameLength();
+        int nbSamples = (int)wavSamplesLoader.audioInputStream.getFrameLength();
         
         double[] output= new double[nbSamples];
         double valeurSource[] = wavSamplesLoader.getAudioSamples(output.length);
@@ -711,7 +711,7 @@ public class Fenetre extends JFrame {
             for (int j = 0; j<pan.matrix.seg.size(); j++){
                 Segment segm = (Segment) pan.matrix.seg.get(j);
                 if(p >= segm.x1 && p <= segm.x2 ){
-                    int pp = p-(p-ObtenirPositionARejouer(p,j));
+                    int pp = ObtenirPositionARejouer(p,j);
                     output[p] = valeurSource[pp];
                 }
             }
@@ -740,8 +740,11 @@ public class Fenetre extends JFrame {
             p2y = tmpy;
         }
         
-        pp = p - ( (p * ((p2y-p1y)/(p2x-p1x))) + p1y - (p1x * ((p2y-p1y)/(p2x-p1x))));
-                
+        double coef = (double)(p2y-p1y)/(p2x-p1x);
+        pp = p - ( (int)(p * coef) + p1y - (int)(p1x * coef) );
+        
+        //pp = p - ( (p * ((p2y-p1y)/(p2x-p1x))) + p1y - (p1x * ((p2y-p1y)/(p2x-p1x))));
+        
         return pp;  
     }
     

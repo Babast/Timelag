@@ -22,7 +22,7 @@ import javax.sound.sampled.*;
   *
   *************************************************************************/
 public class StdAudio {
-    private final static int FPS = 44100;   // samples per second
+    private final static int FPS = 11025;//22050;//44100;   // samples per second
     
     // This declaration makes it impossible to use a new expression new StdAudio().
     private StdAudio() { }
@@ -45,7 +45,7 @@ public class StdAudio {
       Endian, with array values between -1 and 1.
       */
     public static void play(double[] d) {
-        AudioFormat format= new AudioFormat(FPS, 16, 2, true, false);
+        AudioFormat format= new AudioFormat(FPS, 16, 1, true, false);
         byte[] data= new byte[2 * d.length];
         for (int i= 0; i < d.length; i++) {
             int temp= (int) (d[i] * 32768.0);
@@ -61,7 +61,7 @@ public class StdAudio {
       and uses 16-bit audio, 2 chanels, signed PCM, little Endian
       */
     public static void save(double[] d, String f) {
-        AudioFormat format= new AudioFormat(FPS, 16, 2, true, false);
+        AudioFormat format= new AudioFormat(FPS, 16, 1, true, false);
         byte[] data= new byte[2 * d.length];
         for (int i= 0; i < d.length; i++) {
             int temp= (int) (d[i] * 32768.0);
