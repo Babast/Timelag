@@ -33,7 +33,7 @@ public class Fenetre extends JFrame {
     public static JSlider jsZoomY = new JSlider(0,50);
     public static JScrollBar jsPosX = new JScrollBar();
     public static JScrollBar jsPosY = new JScrollBar();
-        
+    
     Timer timer;
     
     static String outil;
@@ -414,6 +414,8 @@ public class Fenetre extends JFrame {
     private void btAppliquerActionPerformed(ActionEvent evt) {
         // Lire le résultat
         StdAudio.play(AppliquerTransformation());
+        
+        // Enregistrer le wav
         //StdAudio.save(AppliquerTransformation(), "C:\\test.wav");
     } 
     
