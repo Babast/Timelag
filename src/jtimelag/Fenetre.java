@@ -375,6 +375,8 @@ public class Fenetre extends JFrame {
             jsPosY.setMaximum((int)wavSamplesLoader.audioInputStream.getFrameLength());
             jsPosY.setValue(jsPosY.getMaximum());
             pan.matrix = new Matrix(wavSamplesLoader.audioInputStream.getFrameLength(),wavSamplesLoader.audioInputStream.getFrameLength());   
+            StdAudio.FPS = (int)wavSamplesLoader.audioInputStream.getFormat().getFrameRate();
+            StdAudio.CHANNELS  = (int)wavSamplesLoader.audioInputStream.getFormat().getChannels();
             repaint();           
         }
     }   

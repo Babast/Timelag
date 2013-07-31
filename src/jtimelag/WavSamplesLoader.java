@@ -22,6 +22,7 @@ public class WavSamplesLoader {
             if (audioInputStream.markSupported()) { 
                 audioInputStream.mark(Integer.MAX_VALUE); 
             }
+
         } catch (UnsupportedAudioFileException | IOException ex) {
             Logger.getLogger(WavSamplesLoader.class.getName()).log(Level.SEVERE, null, ex);
         }
